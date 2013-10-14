@@ -61,9 +61,9 @@ state = foldp stepFun state0 update
 
 
 okMove m (lvl, plyr) = case m of
-    Right -> lvl.w > plyr.i
+    Right -> lvl.w > plyr.i +1
     Left -> plyr.i > 0
-    Up -> lvl.h > plyr.j
+    Up -> lvl.h > plyr.j +1
     Down -> plyr.j > 0
 
 -- Elm does not support nested record updates
@@ -100,15 +100,17 @@ pairs xs ys = let n = length ys in case xs of
     (x::tl) -> (zip (map (\_->x) [1..n]) ys) ++ pairs tl ys
 
 scene : (Int,Int) -> State -> Element
-scene (w,h) (lv,p) = let s = toFloat lv.s
-    in collage w h
-    [ rect (toFloat w) (toFloat h) |> filled lightCharcoal
-    , map (\(i,j) -> (square (0.99*s) |> filled white
-                                      |> move (s*toFloat i, s*toFloat j)))
-            (pairs [0..lv.w] [0..lv.h])
-        |> group |> move (-s * toFloat lv.w * 0.5, -s * toFloat lv.h * 0.5)
-    , p.form |> move (-s * toFloat lv.w * 0.5, -s * toFloat lv.h * 0.5)
-    ]
+scene (w,h) (lv,p) = let
+    s = toFloat lv.s
+    center = move (-s * toFloat (lv.w-1) * 0.5, -s * toFloat (lv.h-1) * 0.5)
+        in collage w h
+        [ rect (toFloat w) (toFloat h) |> filled lightCharcoal
+        , map (\(i,j) -> (square (0.99*s) |> filled white
+                                          |> move (s*toFloat i, s*toFloat j)))
+                (pairs [0..lv.w-1] [0..lv.h-1])
+            |> group |> center
+        , p.form |> center
+        ]
 
 main = layers <~ combine
            [ scene <~ Window.dimensions ~ state
