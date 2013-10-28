@@ -36,17 +36,21 @@ playerBase (i,j) = Player i j 0 0
 playerForm : Form
 playerForm = square 30 |> filled black |> rotate (degrees 45)
 
+goalForm : Form
+goalForm = square 50 |> filled yellow
+
 type Level = {number: Int,
               s: Int,
               w: Int,
               h: Int,
               start: Coord,
+              goal : Coord,
               obstacles: Set.Set Coord
               --seq: [Move]
-              --goal : Coord
               }
 
-level1 = Level 1 100 5 4 (4,3) (Set.fromList [(1,0),(1,1),(1,2), (3,3),(3,2),(3,1)])
+level1 = Level 1 100 5 4 (0,0) (4,3)
+            (Set.fromList [(1,0),(1,1),(1,2), (3,3),(3,2),(3,1)])
                --[Up, Up, 
 level : Signal Level
 level = constant level1
@@ -54,7 +58,7 @@ level = constant level1
 data Update = UMove Move | ULevel Level
 
 uMoves = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> UMove m)
-uLevel = (\l -> ULevel l) <~ level
+uLevel = ULevel <~ level
 update = merge uLevel uMoves
 
 type State = (Level, Player)
@@ -90,6 +94,9 @@ doMove m (lv, p) = (lv, case m of
 drawPlayer : State -> Form
 drawPlayer (lv, p) = playerForm |> move (toFloat (lv.s*p.i), toFloat (lv.s*p.j))
 
+drawGoal : Level -> Form
+drawGoal lv = move (both (\i -> toFloat <| lv.s*i) lv.goal) goalForm
+
 stats : Signal Element
 stats = flow <~ constant down ~ combine
     [ (\lv -> (text . monospace . toText) (show lv.w++"x"++show lv.h++" @"++show lv.s))
@@ -119,6 +126,7 @@ scene (w,h) (lv,p) = let
                                          |> move (s*toFloat i, s*toFloat j)))
                 (Set.toList lv.obstacles)
             |> group |> center
+        , drawGoal lv |> center
         , drawPlayer (lv,p) |> center
         ]
 
@@ -130,3 +138,6 @@ main = layers <~ combine
 
 movePolar : (Float, Float) -> Form -> Form
 movePolar (r, theta) = move <| fromPolar (r, theta)
+
+both : (a -> b) -> (a, a) -> (b, b)
+both f (m, n) = (f m, f n)
