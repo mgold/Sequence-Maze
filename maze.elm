@@ -67,6 +67,11 @@ type Level = {number: Int,
               seq: [Sequence]
               }
 
+goal : Level -> Int -> Coord
+goal lv adv = if succ adv < length lv.seq
+              then lv.seq |> nth (succ adv) |> head |> fst
+              else lv.goal
+
 level1 = Level 1 100 5 4 (0,0) (4,3) [(1,0),(1,1),(1,2), (3,3),(3,2),(3,1)]
       [ [((0,0), Up), ((0,1), Up), ((0,2), Up)]
       , [((0,3), Right), ((1,3), Right)]
@@ -98,9 +103,6 @@ okMove m (lv, _, p) = case m of
     Down -> p.j > 0
                 && not (member (p.i, p.j-1) lv.obstacles)
 
-goal : Level -> Int -> Coord
-goal lv adv = (fst . last) <| nth adv lv.seq
-
 doMove : Move -> State -> State
 doMove m (lv, adv, p) = let
     p' = case m of
@@ -108,7 +110,7 @@ doMove m (lv, adv, p) = let
             Left  -> {p|i <- p.i - 1}
             Up    -> {p|j <- p.j + 1}
             Down  -> {p|j <- p.j - 1}
-    (lv', adv') = if (p.i, p.j) /= goal lv adv
+    (lv', adv') = if (p'.i, p'.j) /= goal lv adv
                   then (lv, adv)
                   else (if succ adv /= length lv.seq
                           then (lv, succ adv)
@@ -160,6 +162,7 @@ stats = flow <~ constant down ~ combine
     , asText <~ lift (\(_,adv,_) -> adv) state
     , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
         <~ lift (\(_,_,p) -> p) state
+    , lift asText <| (\(lv, adv, _) -> goal lv adv) <~ state
     ]
 
 main = layers <~ combine
