@@ -33,6 +33,9 @@ playerBase (i,j) = Player i j 0 0
 playerForm : Form
 playerForm = square 30 |> filled black |> rotate (degrees 45)
 
+subgoalForm : Form
+subgoalForm = square 25 |> filled yellow
+
 goalForm : Form
 goalForm = square 50 |> filled yellow
 
@@ -67,8 +70,11 @@ type Level = {number: Int,
               seq: [Sequence]
               }
 
+isSubgoal : Level -> Int -> Bool
+isSubgoal lv adv = succ adv < length lv.seq
+
 goal : Level -> Int -> Coord
-goal lv adv = if succ adv < length lv.seq
+goal lv adv = if isSubgoal lv adv
               then lv.seq |> nth (succ adv) |> head |> fst
               else lv.goal
 
@@ -124,8 +130,10 @@ grid lv pos = move <| both toFloat <| both ((*) lv.s) <| pos
 drawPlayer : State -> Form
 drawPlayer (lv, _, p) = playerForm |> grid lv (p.i, p.j)
 
-drawGoal : Level -> Form
-drawGoal lv = goalForm |> grid lv lv.goal
+drawGoal : Level -> Int -> Form
+drawGoal lv adv = (if isSubgoal lv adv
+                  then subgoalForm
+                  else goalForm) |> grid lv (goal lv adv)
 
 drawArrows : Level -> Int -> [Form]
 drawArrows lv adv = take (succ adv) lv.seq |> concat
@@ -148,7 +156,7 @@ scene (w,h) (lv,adv,p) = let
             |> group |> center
         ] ++ map center (drawObstacles lv)
           ++ map center (drawArrows lv adv) ++
-        [ drawGoal lv |> center
+        [ drawGoal lv adv |> center
         , drawPlayer (lv,adv,p) |> center
         ]
         )
