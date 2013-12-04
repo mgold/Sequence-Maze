@@ -39,12 +39,26 @@ playerForm = square 30 |> filled black |> rotate (degrees 45)
 goalForm : Form
 goalForm = square 50 |> filled yellow
 
+arrow = polygon [ (2.357,180.198)
+                , (182.555,0)
+                , (2.357,-180.196)
+                , (-116.492,-180.196)
+                , (20.568,-43.131)
+                , (-248.765,-43.131)
+                , (-248.765,44.091)
+                , (19.61,44.091)
+                , (-116.707,180.411)
+                , (2.357,180.198)
+                ]
+
 arrowForm : Move -> Form
-arrowForm m = case m of
-    Right -> ngon 3 30 |> filled green
-    Up ->    ngon 3 30 |> filled blue   |> rotate (turns 0.25)
-    Left ->  ngon 3 30 |> filled purple |> rotate (turns 0.5)
-    Down ->  ngon 3 30 |> filled red    |> rotate (turns 0.75)
+arrowForm m = scale 0.15 <| case m of
+    Right -> arrow |> filled green
+    Up    -> arrow |> filled blue   |> rotate (turns 0.25)
+    Left  -> arrow |> filled purple |> rotate (turns 0.5)
+    Down  -> arrow |> filled red    |> rotate (turns 0.75)
+
+type Sequence = [(Coord, Move)]
 
 type Level = {number: Int,
               s: Int,
@@ -53,13 +67,12 @@ type Level = {number: Int,
               start: Coord,
               goal : Coord,
               obstacles: Set.Set Coord,
-              seq: [(Coord, Move)]
+              seq: Sequence
               }
 
 level1 = Level 1 100 5 4 (0,0) (4,3)
             (Set.fromList [(1,0),(1,1),(1,2), (3,3),(3,2),(3,1)])
-
- [((0,1), Up), ((0,2), Up), ((0,3), Right), ((1,3), Right), ((2,3), Down)]
+     [((0,0), Up), ((0,1), Up), ((0,2), Up), ((0,3), Right), ((1,3), Right), ((2,3), Down)]
 
 level : Signal Level
 level = constant level1
