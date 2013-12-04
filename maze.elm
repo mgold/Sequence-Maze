@@ -132,6 +132,11 @@ doMove m {lv, adv, p} = let
 grid : Level -> (Int, Int) -> Form -> Form
 grid lv pos = move <| both toFloat <| both ((*) lv.side) <| pos
 
+drawSquares : Level -> [Form]
+drawSquares lv = map (\p -> square (0.99*toFloat lv.side)
+                            |> filled white |> grid lv p)
+   <| pairs [0..pred lv.w] [0..pred lv.h]
+
 drawPlayer : Level -> Player -> Form
 drawPlayer lv p = playerForm |> grid lv (p.i, p.j)
 
@@ -154,12 +159,8 @@ scene (w,h) {lv,adv,p} = let
     side = toFloat lv.side
     center = move (-side * toFloat (lv.w-1) * 0.5, -side * toFloat (lv.h-1) * 0.5)
         in collage w h <|
-        [ rect (toFloat w) (toFloat h) |> filled lightCharcoal ] ++
-         (map (\(i,j) -> (square (0.99*side))
-            |> filled white
-            |> move (side*toFloat i, side*toFloat j)
-            |> center
-            ) (pairs [0..(lv.w)-1] [0..(lv.h)-1]) )
+        [ rect (toFloat w) (toFloat h) |> filled lightCharcoal ] 
+          ++ map center (drawSquares lv)
           ++ map center (drawObstacles lv)
           ++ map center (drawArrows lv adv) ++
         [ drawGoal lv adv  |> center
@@ -196,6 +197,7 @@ pairs xs ys = let n = length ys in case xs of
     (x::tl) -> (zip (map (\_->x) [1..n]) ys) ++ pairs tl ys
 
 succ = (+) 1
+pred = flip (-) <| 1
 
 member : a -> [a] -> Bool
 member findMe list = case list of
