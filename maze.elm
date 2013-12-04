@@ -19,13 +19,11 @@ moves = let
                     _ -> Nothing
         in lift toMove arrows |> keepIf isJust Nothing
 
-
 movement : Signal Movement
 movement = let toMovement m = case m of
                     Just d -> Just (d, 1)
                     Nothing -> Nothing
            in toMovement <~ moves
-
 
 type Player = {i : Int, j : Int,
                dx : Float, dy : Float
@@ -98,15 +96,15 @@ stepFun u s = case u of
 state = foldp stepFun state0 update
 
 okMove : Move -> State -> Bool
-okMove m (lvl, _, p) = case m of
-    Right -> lvl.w > p.i +1
-                && not (Set.member (p.i+1, p.j) lvl.obstacles)
+okMove m (lv, _, p) = case m of
+    Right -> lv.w > p.i +1
+                && not (Set.member (p.i+1, p.j) lv.obstacles)
     Left -> p.i > 0
-                && not (Set.member (p.i-1, p.j) lvl.obstacles)
-    Up -> lvl.h > p.j +1
-                && not (Set.member (p.i, p.j+1) lvl.obstacles)
+                && not (Set.member (p.i-1, p.j) lv.obstacles)
+    Up -> lv.h > p.j +1
+                && not (Set.member (p.i, p.j+1) lv.obstacles)
     Down -> p.j > 0
-                && not (Set.member (p.i, p.j-1) lvl.obstacles)
+                && not (Set.member (p.i, p.j-1) lv.obstacles)
 
 doMove : Move -> State -> State
 doMove m (lv, adv, p) = (lv, adv, case m of
@@ -126,15 +124,6 @@ drawPlayer (lv, _, p) = playerForm |> grid lv (p.i, p.j)
 drawGoal : Level -> Form
 drawGoal lv = goalForm |> grid lv lv.goal
 
-stats : Signal Element
-stats = flow <~ constant down ~ combine
-    [ (\lv -> (text . monospace . toText) (show lv.w++"x"++show lv.h++" @"++show lv.s))
-        <~ level
-    , asText <~ arrows
-    , asText <~ moves
-    , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
-        <~ lift (\(_,_,t) -> t) state
-    ]
 drawArrows : Level -> Int -> [Form]
 drawArrows lv adv = take (succ adv) lv.seq |> concat
                       |> map (\(c, m) -> grid lv c <| arrowForm m)
@@ -158,6 +147,16 @@ scene (w,h) (lv,adv,p) = let
         , drawPlayer (lv,adv,p) |> center
         ]
         )
+
+stats : Signal Element
+stats = flow <~ constant down ~ combine
+    [ (\lv -> (text . monospace . toText) (show lv.w++"x"++show lv.h++" @"++show lv.s))
+        <~ level
+    , asText <~ arrows
+    , asText <~ moves
+    , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
+        <~ lift (\(_,_,t) -> t) state
+    ]
 
 main = layers <~ combine
            [ scene <~ Window.dimensions ~ state
