@@ -1,6 +1,5 @@
 import Window
 import Http (sendGet, Success, Response)
-import Set
 import Keyboard (arrows)
 
 data Move = Up | Down | Left | Right
@@ -64,12 +63,11 @@ type Level = {number: Int,
               h: Int,
               start: Coord,
               goal : Coord,
-              obstacles: Set.Set Coord,
+              obstacles: [Coord],
               seq: [Sequence]
               }
 
-level1 = Level 1 100 5 4 (0,0) (4,3)
-            (Set.fromList [(1,0),(1,1),(1,2), (3,3),(3,2),(3,1)])
+level1 = Level 1 100 5 4 (0,0) (4,3) [(1,0),(1,1),(1,2), (3,3),(3,2),(3,1)]
       [ [((0,0), Up), ((0,1), Up), ((0,2), Up)]
       , [((0,3), Right), ((1,3), Right)]
       , [((2,3), Down), ((2,2), Down)]
@@ -89,13 +87,13 @@ state = foldp stepFun state0 update
 okMove : Move -> State -> Bool
 okMove m (lv, _, p) = case m of
     Right -> lv.w > p.i +1
-                && not (Set.member (p.i+1, p.j) lv.obstacles)
+                && not (member (p.i+1, p.j) lv.obstacles)
     Left -> p.i > 0
-                && not (Set.member (p.i-1, p.j) lv.obstacles)
+                && not (member (p.i-1, p.j) lv.obstacles)
     Up -> lv.h > p.j +1
-                && not (Set.member (p.i, p.j+1) lv.obstacles)
+                && not (member (p.i, p.j+1) lv.obstacles)
     Down -> p.j > 0
-                && not (Set.member (p.i, p.j-1) lv.obstacles)
+                && not (member (p.i, p.j-1) lv.obstacles)
 
 doMove : Move -> State -> State
 doMove m (lv, adv, p) = (lv, adv, case m of
@@ -119,6 +117,11 @@ drawArrows : Level -> Int -> [Form]
 drawArrows lv adv = take (succ adv) lv.seq |> concat
                       |> map (\(c, m) -> grid lv c <| arrowForm m)
 
+drawObstacles : Level -> [Form]
+drawObstacles lv = let
+    obstacleForm = square (0.9 * toFloat lv.s) |> filled darkCharcoal
+                   in map (\c -> grid lv c obstacleForm) lv.obstacles
+
 scene : (Int,Int) -> State -> Element
 scene (w,h) (lv,adv,p) = let
     s = toFloat lv.s
@@ -129,11 +132,8 @@ scene (w,h) (lv,adv,p) = let
                                           |> move (s*toFloat i, s*toFloat j)))
                 (pairs [0..lv.w-1] [0..lv.h-1])
             |> group |> center
-        , map (\(i,j) -> (square (0.9*s) |> filled darkCharcoal
-                                         |> move (s*toFloat i, s*toFloat j)))
-                (Set.toList lv.obstacles)
-            |> group |> center
-        ] ++ map center (drawArrows lv adv)++
+        ] ++ map center (drawObstacles lv)
+          ++ map center (drawArrows lv adv) ++
         [ drawGoal lv |> center
         , drawPlayer (lv,adv,p) |> center
         ]
@@ -167,6 +167,11 @@ pairs xs ys = let n = length ys in case xs of
     (x::tl) -> (zip (map (\_->x) [1..n]) ys) ++ pairs tl ys
 
 succ = (+) 1
+
+member : a -> [a] -> Bool
+member findMe list = case list of
+    [] -> False
+    (x::xs) -> if x == findMe then True else member findMe xs
 
 {-
 nth : Int -> [a] -> a
