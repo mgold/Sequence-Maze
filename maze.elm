@@ -75,23 +75,14 @@ level1 = Level 1 100 5 4 (0,0) (4,3)
       , [((2,3), Down), ((2,2), Down)]
       ]
 
-level : Signal Level
-level = constant level1
-
-data Update = UMove Move | ULevel Level
-
-uMoves = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> UMove m)
-uLevel = ULevel <~ level
-update = merge uLevel uMoves
+update = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> m)
 
 type State = (Level, Int, Player)
 state0 : State
 state0 = (level1, 0, playerBase level1.start)
 
-stepFun : Update -> State -> State
-stepFun u s = case u of
-    UMove m -> if okMove m s then doMove m s else s
-    ULevel l -> (l, 0, playerBase l.start)
+stepFun : Move -> State -> State
+stepFun m s = if okMove m s then doMove m s else s
 
 state = foldp stepFun state0 update
 
@@ -151,11 +142,11 @@ scene (w,h) (lv,adv,p) = let
 stats : Signal Element
 stats = flow <~ constant down ~ combine
     [ (\lv -> (text . monospace . toText) (show lv.w++"x"++show lv.h++" @"++show lv.s))
-        <~ level
+        <~ lift (\(lv,_,_) -> lv) state
     , asText <~ arrows
     , asText <~ moves
     , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
-        <~ lift (\(_,_,t) -> t) state
+        <~ lift (\(_,_,p) -> p) state
     ]
 
 main = layers <~ combine
