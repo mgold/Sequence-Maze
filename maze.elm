@@ -83,29 +83,30 @@ uMoves = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> UMove m)
 uLevel = ULevel <~ level
 update = merge uLevel uMoves
 
-type State = (Level, Player)
+type State = (Level, Int, Player)
 state0 : State
-state0 = (level1, playerBase level1.start)
+state0 = (level1, 0, playerBase level1.start)
 
 stepFun : Update -> State -> State
 stepFun u s = case u of
     UMove m -> if okMove m s then doMove m s else s
-    ULevel l -> (l, playerBase level1.start)
+    ULevel l -> (l, 0, playerBase l.start)
 
 state = foldp stepFun state0 update
 
-okMove m (lvl, plyr) = case m of
-    Right -> lvl.w > plyr.i +1
-                && not (Set.member (plyr.i+1, plyr.j) lvl.obstacles)
-    Left -> plyr.i > 0
-                && not (Set.member (plyr.i-1, plyr.j) lvl.obstacles)
-    Up -> lvl.h > plyr.j +1
-                && not (Set.member (plyr.i, plyr.j+1) lvl.obstacles)
-    Down -> plyr.j > 0
-                && not (Set.member (plyr.i, plyr.j-1) lvl.obstacles)
+okMove : Move -> State -> Bool
+okMove m (lvl, _, p) = case m of
+    Right -> lvl.w > p.i +1
+                && not (Set.member (p.i+1, p.j) lvl.obstacles)
+    Left -> p.i > 0
+                && not (Set.member (p.i-1, p.j) lvl.obstacles)
+    Up -> lvl.h > p.j +1
+                && not (Set.member (p.i, p.j+1) lvl.obstacles)
+    Down -> p.j > 0
+                && not (Set.member (p.i, p.j-1) lvl.obstacles)
 
 doMove : Move -> State -> State
-doMove m (lv, p) = (lv, case m of
+doMove m (lv, adv, p) = (lv, adv, case m of
     Right -> {p|i <- p.i + 1}
     Left  -> {p|i <- p.i - 1}
     Up    -> {p|j <- p.j + 1}
@@ -113,7 +114,7 @@ doMove m (lv, p) = (lv, case m of
         )
 
 drawPlayer : State -> Form
-drawPlayer (lv, p) = playerForm |> move (toFloat (lv.s*p.i), toFloat (lv.s*p.j))
+drawPlayer (lv, _, p) = playerForm |> move (both toFloat (lv.s*p.i, lv.s*p.j))
 
 drawGoal : Level -> Form
 drawGoal lv = move (both (\i -> toFloat <| lv.s*i) lv.goal) goalForm
@@ -128,11 +129,11 @@ stats = flow <~ constant down ~ combine
     , asText <~ arrows
     , asText <~ moves
     , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
-        <~ lift snd state
+        <~ lift (\(_,_,t) -> t) state
     ]
 
 scene : (Int,Int) -> State -> Element
-scene (w,h) (lv,p) = let
+scene (w,h) (lv,adv,p) = let
     s = toFloat lv.s
     center = move (-s * toFloat (lv.w-1) * 0.5, -s * toFloat (lv.h-1) * 0.5)
         in collage w h (
@@ -147,7 +148,7 @@ scene (w,h) (lv,p) = let
             |> group |> center
         ] ++ (map (center . drawArrow lv.s) lv.seq) ++
         [ drawGoal lv |> center
-        , drawPlayer (lv,p) |> center
+        , drawPlayer (lv,adv,p) |> center
         ]
         )
 
