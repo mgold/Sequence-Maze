@@ -99,7 +99,7 @@ state0 : State
 state0 = State level1 0 (playerBase level1.start) Nothing
 
 stepFun : Move -> State -> State
-stepFun m s = if okMove m s then doMove m s else s
+stepFun m s = if okMove m s then doMove m s else {s|lm <- Nothing}
 
 state = foldp stepFun state0 update
 
@@ -126,7 +126,7 @@ doMove m {lv, adv, p} = let
                   else (if succ adv /= length lv.seq
                           then (lv, succ adv)
                           else (nth (succ lv.number) levels, 0))
-                        in State lv' adv' p' Nothing
+                        in State lv' adv' p' <| Just m
 
 --Draw
 grid : Level -> (Int, Int) -> Form -> Form
@@ -174,6 +174,7 @@ stats = flow <~ constant down ~ combine
     , asText <~ arrows
     , asText <~ moves
     , asText <~ lift .adv state
+    , asText <~ lift .lm state
     , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
         <~ lift .p state
     , lift asText <| (\{lv, adv} -> goal lv adv) <~ state
