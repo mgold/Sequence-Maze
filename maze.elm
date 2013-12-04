@@ -30,34 +30,6 @@ type Player = {i : Int, j : Int,
 
 playerBase (i,j) = Player i j 0 0
 
-playerForm : Form
-playerForm = square 30 |> filled black |> rotate (degrees 45)
-
-subgoalForm : Form
-subgoalForm = square 25 |> filled yellow
-
-goalForm : Form
-goalForm = square 50 |> filled yellow
-
-arrow = polygon [ (2.357,180.198)
-                , (182.555,0)
-                , (2.357,-180.196)
-                , (-116.492,-180.196)
-                , (20.568,-43.131)
-                , (-248.765,-43.131)
-                , (-248.765,44.091)
-                , (19.61,44.091)
-                , (-116.707,180.411)
-                , (2.357,180.198)
-                ]
-
-arrowForm : Move -> Form
-arrowForm m = scale 0.15 <| case m of
-    Right -> arrow |> filled green
-    Up    -> arrow |> filled blue   |> rotate (turns 0.25)
-    Left  -> arrow |> filled purple |> rotate (turns 0.5)
-    Down  -> arrow |> filled red    |> rotate (turns 0.75)
-
 type Sequence = [(Coord, Move)]
 
 type Level = {number: Int,
@@ -128,34 +100,57 @@ doMove m {lv, adv, p} = let
                           else (nth (succ lv.number) levels, 0))
                         in State lv' adv' p' <| Just m
 
---Draw
+-- DRAW ----
 grid : Level -> (Int, Int) -> Form -> Form
 grid lv pos = move <| both toFloat <| both ((*) lv.side) <| pos
+
+arrow = polygon [ (2.357,180.198)
+                , (182.555,0)
+                , (2.357,-180.196)
+                , (-116.492,-180.196)
+                , (20.568,-43.131)
+                , (-248.765,-43.131)
+                , (-248.765,44.091)
+                , (19.61,44.091)
+                , (-116.707,180.411)
+                , (2.357,180.198)
+                ]
+
+arrowForm : Move -> Form
+arrowForm m = scale 0.15 <| case m of
+    Right -> arrow |> filled green
+    Up    -> arrow |> filled blue   |> rotate (turns 0.25)
+    Left  -> arrow |> filled purple |> rotate (turns 0.5)
+    Down  -> arrow |> filled red    |> rotate (turns 0.75)
+
+drawArrows : Level -> Int -> [Form]
+drawArrows lv adv = take (succ adv) lv.seq |> concat
+                      |> map (\(c, m) -> grid lv c <| arrowForm m)
 
 drawSquares : Level -> [Form]
 drawSquares lv = map (\p -> square (0.99*toFloat lv.side)
                             |> filled white |> grid lv p)
    <| pairs [0..pred lv.w] [0..pred lv.h]
 
-drawPlayer : Level -> Player -> Form
-drawPlayer lv p = playerForm |> grid lv (p.i, p.j)
+drawPlayer : Level -> Player -> Time -> Form
+drawPlayer lv p t = square (30 + 5*sin (t/200))
+                    |> filled black
+                    |> rotate (degrees 45)
+                    |> grid lv (p.i, p.j)
 
-drawGoal : Level -> Int -> Form
-drawGoal lv adv = (if isSubgoal lv adv
-                  then subgoalForm
-                  else goalForm) |> grid lv (goal lv adv)
-
-drawArrows : Level -> Int -> [Form]
-drawArrows lv adv = take (succ adv) lv.seq |> concat
-                      |> map (\(c, m) -> grid lv c <| arrowForm m)
+drawGoal : Level -> Int -> Float -> Form
+drawGoal lv adv t = square (if isSubgoal lv adv then 25 else 50)
+                    |> filled yellow
+                    |> rotate (turns <| t/3000)
+                    |> grid lv (goal lv adv)
 
 drawObstacles : Level -> [Form]
 drawObstacles lv = let
     obstacleForm = square (0.9 * toFloat (lv.side)) |> filled darkCharcoal
                    in map (\c -> grid lv c obstacleForm) lv.obstacles
 
-scene : (Int,Int) -> State -> Element
-scene (w,h) {lv,adv,p} = let
+scene : (Int,Int) -> Time -> State -> Element
+scene (w,h) t {lv,adv,p} = let
     side = toFloat lv.side
     center = move (-side * toFloat (lv.w-1) * 0.5, -side * toFloat (lv.h-1) * 0.5)
         in collage w h <|
@@ -163,8 +158,8 @@ scene (w,h) {lv,adv,p} = let
           ++ map center (drawSquares lv)
           ++ map center (drawObstacles lv)
           ++ map center (drawArrows lv adv) ++
-        [ drawGoal lv adv  |> center
-        , drawPlayer lv p |> center
+        [ drawGoal lv adv t |> center
+        , drawPlayer lv p t |> center
         ]
 
 stats : Signal Element
@@ -181,7 +176,7 @@ stats = flow <~ constant down ~ combine
     ]
 
 main = layers <~ combine
-           [ scene <~ Window.dimensions ~ state
+           [ scene <~ Window.dimensions ~ foldp (+) 0 (fps 20) ~ state
            , stats ]
 
 -- Below: should be library functions
