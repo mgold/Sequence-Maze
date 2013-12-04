@@ -61,7 +61,7 @@ arrowForm m = scale 0.15 <| case m of
 type Sequence = [(Coord, Move)]
 
 type Level = {number: Int,
-              s: Int,
+              side: Int,
               w: Int,
               h: Int,
               start: Coord,
@@ -89,9 +89,14 @@ levels = [level1]
 
 update = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> m)
 
-type State = (Level, Int, Player)
+type State = {lv : Level,
+              adv : Int,
+              p : Player,
+              lm : Maybe Move
+             }
+
 state0 : State
-state0 = (level1, 0, playerBase level1.start)
+state0 = State level1 0 (playerBase level1.start) Nothing
 
 stepFun : Move -> State -> State
 stepFun m s = if okMove m s then doMove m s else s
@@ -99,7 +104,7 @@ stepFun m s = if okMove m s then doMove m s else s
 state = foldp stepFun state0 update
 
 okMove : Move -> State -> Bool
-okMove m (lv, _, p) = case m of
+okMove m {lv, p} = case m of
     Right -> lv.w > p.i +1
                 && not (member (p.i+1, p.j) lv.obstacles)
     Left -> p.i > 0
@@ -110,7 +115,7 @@ okMove m (lv, _, p) = case m of
                 && not (member (p.i, p.j-1) lv.obstacles)
 
 doMove : Move -> State -> State
-doMove m (lv, adv, p) = let
+doMove m {lv, adv, p} = let
     p' = case m of
             Right -> {p|i <- p.i + 1}
             Left  -> {p|i <- p.i - 1}
@@ -121,14 +126,14 @@ doMove m (lv, adv, p) = let
                   else (if succ adv /= length lv.seq
                           then (lv, succ adv)
                           else (nth (succ lv.number) levels, 0))
-                        in (lv', adv', p')
+                        in State lv' adv' p' Nothing
 
 --Draw
 grid : Level -> (Int, Int) -> Form -> Form
-grid lv pos = move <| both toFloat <| both ((*) lv.s) <| pos
+grid lv pos = move <| both toFloat <| both ((*) lv.side) <| pos
 
-drawPlayer : State -> Form
-drawPlayer (lv, _, p) = playerForm |> grid lv (p.i, p.j)
+drawPlayer : Level -> Player -> Form
+drawPlayer lv p = playerForm |> grid lv (p.i, p.j)
 
 drawGoal : Level -> Int -> Form
 drawGoal lv adv = (if isSubgoal lv adv
@@ -141,36 +146,36 @@ drawArrows lv adv = take (succ adv) lv.seq |> concat
 
 drawObstacles : Level -> [Form]
 drawObstacles lv = let
-    obstacleForm = square (0.9 * toFloat lv.s) |> filled darkCharcoal
+    obstacleForm = square (0.9 * toFloat (lv.side)) |> filled darkCharcoal
                    in map (\c -> grid lv c obstacleForm) lv.obstacles
 
 scene : (Int,Int) -> State -> Element
-scene (w,h) (lv,adv,p) = let
-    s = toFloat lv.s
-    center = move (-s * toFloat (lv.w-1) * 0.5, -s * toFloat (lv.h-1) * 0.5)
-        in collage w h (
-        [ rect (toFloat w) (toFloat h) |> filled lightCharcoal
-        , map (\(i,j) -> (square (0.99*s) |> filled white
-                                          |> move (s*toFloat i, s*toFloat j)))
-                (pairs [0..lv.w-1] [0..lv.h-1])
-            |> group |> center
-        ] ++ map center (drawObstacles lv)
+scene (w,h) {lv,adv,p} = let
+    side = toFloat lv.side
+    center = move (-side * toFloat (lv.w-1) * 0.5, -side * toFloat (lv.h-1) * 0.5)
+        in collage w h <|
+        [ rect (toFloat w) (toFloat h) |> filled lightCharcoal ] ++
+         (map (\(i,j) -> (square (0.99*side))
+            |> filled white
+            |> move (side*toFloat i, side*toFloat j)
+            |> center
+            ) (pairs [0..(lv.w)-1] [0..(lv.h)-1]) )
+          ++ map center (drawObstacles lv)
           ++ map center (drawArrows lv adv) ++
-        [ drawGoal lv adv |> center
-        , drawPlayer (lv,adv,p) |> center
+        [ drawGoal lv adv  |> center
+        , drawPlayer lv p |> center
         ]
-        )
 
 stats : Signal Element
 stats = flow <~ constant down ~ combine
-    [ (\lv -> (text . monospace . toText) (show lv.number++": "++show lv.w++"x"++show lv.h++" @"++show lv.s))
-        <~ lift (\(lv,_,_) -> lv) state
+    [ (\lv -> (text . monospace . toText) (show lv.number++": "++show lv.w++"x"++show lv.h++" @"++show lv.side))
+        <~ lift .lv state
     , asText <~ arrows
     , asText <~ moves
-    , asText <~ lift (\(_,adv,_) -> adv) state
+    , asText <~ lift .adv state
     , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
-        <~ lift (\(_,_,p) -> p) state
-    , lift asText <| (\(lv, adv, _) -> goal lv adv) <~ state
+        <~ lift .p state
+    , lift asText <| (\{lv, adv} -> goal lv adv) <~ state
     ]
 
 main = layers <~ combine
