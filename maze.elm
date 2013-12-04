@@ -67,12 +67,15 @@ type Level = {number: Int,
               start: Coord,
               goal : Coord,
               obstacles: Set.Set Coord,
-              seq: Sequence
+              seq: [Sequence]
               }
 
 level1 = Level 1 100 5 4 (0,0) (4,3)
             (Set.fromList [(1,0),(1,1),(1,2), (3,3),(3,2),(3,1)])
-     [((0,0), Up), ((0,1), Up), ((0,2), Up), ((0,3), Right), ((1,3), Right), ((2,3), Down)]
+      [ [((0,0), Up), ((0,1), Up), ((0,2), Up)]
+      , [((0,3), Right), ((1,3), Right)]
+      , [((2,3), Down), ((2,2), Down)]
+      ]
 
 level : Signal Level
 level = constant level1
@@ -113,14 +116,15 @@ doMove m (lv, adv, p) = (lv, adv, case m of
     Down  -> {p|j <- p.j - 1}
         )
 
+--Draw
+grid : Level -> (Int, Int) -> Form -> Form
+grid lv pos = move <| both toFloat <| both ((*) lv.s) <| pos
+
 drawPlayer : State -> Form
-drawPlayer (lv, _, p) = playerForm |> move (both toFloat (lv.s*p.i, lv.s*p.j))
+drawPlayer (lv, _, p) = playerForm |> grid lv (p.i, p.j)
 
 drawGoal : Level -> Form
-drawGoal lv = move (both (\i -> toFloat <| lv.s*i) lv.goal) goalForm
-
-drawArrow : Int -> (Coord, Move) -> Form
-drawArrow s (c, m) = move (both (\i -> toFloat <| s*i) c) (arrowForm m)
+drawGoal lv = goalForm |> grid lv lv.goal
 
 stats : Signal Element
 stats = flow <~ constant down ~ combine
@@ -131,6 +135,9 @@ stats = flow <~ constant down ~ combine
     , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
         <~ lift (\(_,_,t) -> t) state
     ]
+drawArrows : Level -> Int -> [Form]
+drawArrows lv adv = take (succ adv) lv.seq |> concat
+                      |> map (\(c, m) -> grid lv c <| arrowForm m)
 
 scene : (Int,Int) -> State -> Element
 scene (w,h) (lv,adv,p) = let
@@ -146,7 +153,7 @@ scene (w,h) (lv,adv,p) = let
                                          |> move (s*toFloat i, s*toFloat j)))
                 (Set.toList lv.obstacles)
             |> group |> center
-        ] ++ (map (center . drawArrow lv.s) lv.seq) ++
+        ] ++ map center (drawArrows lv adv)++
         [ drawGoal lv |> center
         , drawPlayer (lv,adv,p) |> center
         ]
@@ -169,3 +176,9 @@ pairs xs ys = let n = length ys in case xs of
     [] -> []
     (x::tl) -> (zip (map (\_->x) [1..n]) ys) ++ pairs tl ys
 
+succ = (+) 1
+
+{-
+nth : Int -> [a] -> a
+nth = head . drop
+-}
