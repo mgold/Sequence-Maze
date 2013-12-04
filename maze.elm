@@ -73,6 +73,9 @@ level1 = Level 1 100 5 4 (0,0) (4,3) [(1,0),(1,1),(1,2), (3,3),(3,2),(3,1)]
       , [((2,3), Down), ((2,2), Down)]
       ]
 
+levels : [Level]
+levels = [level1]
+
 update = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> m)
 
 type State = (Level, Int, Player)
@@ -95,13 +98,22 @@ okMove m (lv, _, p) = case m of
     Down -> p.j > 0
                 && not (member (p.i, p.j-1) lv.obstacles)
 
+goal : Level -> Int -> Coord
+goal lv adv = (fst . last) <| nth adv lv.seq
+
 doMove : Move -> State -> State
-doMove m (lv, adv, p) = (lv, adv, case m of
-    Right -> {p|i <- p.i + 1}
-    Left  -> {p|i <- p.i - 1}
-    Up    -> {p|j <- p.j + 1}
-    Down  -> {p|j <- p.j - 1}
-        )
+doMove m (lv, adv, p) = let
+    p' = case m of
+            Right -> {p|i <- p.i + 1}
+            Left  -> {p|i <- p.i - 1}
+            Up    -> {p|j <- p.j + 1}
+            Down  -> {p|j <- p.j - 1}
+    (lv', adv') = if (p.i, p.j) /= goal lv adv
+                  then (lv, adv)
+                  else (if succ adv /= length lv.seq
+                          then (lv, succ adv)
+                          else (nth (succ lv.number) levels, 0))
+                        in (lv', adv', p')
 
 --Draw
 grid : Level -> (Int, Int) -> Form -> Form
@@ -141,10 +153,11 @@ scene (w,h) (lv,adv,p) = let
 
 stats : Signal Element
 stats = flow <~ constant down ~ combine
-    [ (\lv -> (text . monospace . toText) (show lv.w++"x"++show lv.h++" @"++show lv.s))
+    [ (\lv -> (text . monospace . toText) (show lv.number++": "++show lv.w++"x"++show lv.h++" @"++show lv.s))
         <~ lift (\(lv,_,_) -> lv) state
     , asText <~ arrows
     , asText <~ moves
+    , asText <~ lift (\(_,adv,_) -> adv) state
     , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
         <~ lift (\(_,_,p) -> p) state
     ]
@@ -173,7 +186,5 @@ member findMe list = case list of
     [] -> False
     (x::xs) -> if x == findMe then True else member findMe xs
 
-{-
 nth : Int -> [a] -> a
-nth = head . drop
--}
+nth i xs = head <| drop i xs
