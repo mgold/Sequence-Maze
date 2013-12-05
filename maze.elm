@@ -1,6 +1,7 @@
 import Window
 import Http (sendGet, Success, Response)
 import Keyboard (arrows)
+import JavaScript as JS
 
 data Move = Up | Down | Left | Right
 type Frac = Float -- semantically between 0 and 1
@@ -181,6 +182,13 @@ stats = flow <~ constant down ~ combine
 main = layers <~ combine
            [ scene <~ Window.dimensions ~ foldp (+) 0 (fps 20) ~ state
            , stats ]
+
+sound : Signal String
+sound = (show . .ot) <~ state
+
+soundJS = lift JS.fromString sound
+foreign export jsevent "sound"
+    soundJS : Signal JS.JSString
 
 -- Below: should be library functions
 
