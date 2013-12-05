@@ -61,17 +61,18 @@ levels = [level1]
 
 update = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> m)
 
+data Output = Mv Move | Subgoal | Goal | Nada
 type State = {lv : Level,
               adv : Int,
               p : Player,
-              lm : Maybe Move
+              ot : Output
              }
 
 state0 : State
-state0 = State level1 0 (playerBase level1.start) Nothing
+state0 = State level1 0 (playerBase level1.start) Nada
 
 stepFun : Move -> State -> State
-stepFun m s = if okMove m s then doMove m s else {s|lm <- Nothing}
+stepFun m s = if okMove m s then doMove m s else {s|ot <- Nada}
 
 state = foldp stepFun state0 update
 
@@ -87,18 +88,20 @@ okMove m {lv, p} = case m of
                 && not (member (p.i, p.j-1) lv.obstacles)
 
 doMove : Move -> State -> State
-doMove m {lv, adv, p} = let
-    p' = case m of
-            Right -> {p|i <- p.i + 1}
-            Left  -> {p|i <- p.i - 1}
-            Up    -> {p|j <- p.j + 1}
-            Down  -> {p|j <- p.j - 1}
-    (lv', adv') = if (p'.i, p'.j) /= goal lv adv
-                  then (lv, adv)
-                  else (if succ adv /= length lv.seq
-                          then (lv, succ adv)
-                          else (nth (succ lv.number) levels, 0))
-                        in State lv' adv' p' <| Just m
+doMove m {lv, adv, p} = let p' = case m of
+        Right -> {p|i <- p.i + 1}
+        Left  -> {p|i <- p.i - 1}
+        Up    -> {p|j <- p.j + 1}
+        Down  -> {p|j <- p.j - 1}
+    in if |(p'.i, p'.j) /= goal lv adv -> -- no level change
+               State lv adv p' (Mv m)
+          |succ adv /= length lv.seq ->   -- subgoal
+               State lv (succ adv) (playerBase lv.start) Subgoal
+          |otherwise ->                   -- goal
+               let lv' = nth (succ lv.number) levels
+               in State lv' 0 (playerBase lv'.start) Goal
+
+
 
 -- DRAW ----
 grid : Level -> (Int, Int) -> Form -> Form
@@ -169,7 +172,7 @@ stats = flow <~ constant down ~ combine
     , asText <~ arrows
     , asText <~ moves
     , asText <~ lift .adv state
-    , asText <~ lift .lm state
+    , asText <~ lift .ot state
     , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
         <~ lift .p state
     , lift asText <| (\{lv, adv} -> goal lv adv) <~ state
