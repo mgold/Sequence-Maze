@@ -3,7 +3,8 @@ import Http (sendGet, Success, Response)
 import Keyboard (arrows)
 import JavaScript as JS
 
-data Move = Up | Down | Left | Right
+import open Arrow
+
 type Frac = Float -- semantically between 0 and 1
 type Movement = Maybe (Move, Frac)
 type Coord = (Int, Int)
@@ -51,16 +52,41 @@ goal lv adv = if isSubgoal lv adv
               then lv.seq |> nth (succ adv) |> head |> fst
               else lv.goal
 
-level1 = Level 1 100 5 4 (0,0) (4,3) [(1,0),(1,1),(1,2), (3,3),(3,2),(3,1)]
-      [ [((0,0), Up), ((0,1), Up), ((0,2), Up)]
-      , [((0,3), Right), ((1,3), Right)]
-      , [((2,3), Down), ((2,2), Down)]
-      , [((2,1), Down), ((2,0), Right), ((3,0), Right), ((4,0), Up)]
-      , [((4,1), Up), ((4,2), Up)]
-      ]
-
 levels : [Level]
-levels = [level1]
+levels = [
+    Level 0 150 4 3 (1,0) (3,0) [(1,1), (2,1), (2,0)]
+    [ [((1,0), Left), ((0,0), Up), ((0,1), Up)]
+    , [((0,2), Right), ((1,2), Right), ((2,2), Right)]
+    , [((3,2), Down), ((3,1), Down) ]
+    ]
+    ,
+    Level 1 80 3 8 (0,0) (2,7) [(0,1),(1,1),(1,3),(1,4),(1,5),(2,5)]
+    [ [((0,0), Right), ((1,0), Right), ((2,0), Up)]
+    , [((2,1), Up), ((2,2), Left), ((1,2), Left)]
+    , [((0,2), Up), ((0,3), Up), ((0,4), Up), ((0,5), Up)]
+    , [((0,6), Right), ((1,6), Right), ((2,6), Up)]
+    ]
+    ,
+    Level 2 120 5 4 (0,0) (4,3) [(1,0),(1,1),(1,2), (3,3),(3,2),(3,1)]
+    [ [((0,0), Up), ((0,1), Up), ((0,2), Up)]
+    , [((0,3), Right), ((1,3), Right)]
+    , [((2,3), Down), ((2,2), Down)]
+    , [((2,1), Down), ((2,0), Right), ((3,0), Right), ((4,0), Up)]
+    , [((4,1), Up), ((4,2), Up)]
+    ]
+    ,
+    Level 3 80 8 7 (0,0) (6,0)
+        [(0,1),(1,3),(1,5),(2,0),(2,1),(2,3),(2,5),(2,6),(3,3),(4,1),(4,2),(4,3),(4,4),(4,5),(5,0),(6,1),(6,2),(6,3),(6,5),(6,6)]
+    [ [((0,0),Right),((1,0),Up),((1,1),Up),((1,2),Left)]
+    , [((0,2),Up),((0,3),Up),((0,4),Right),((1,4),Right),((2,4),Right)]
+    , [((3,4),Up),((3,5),Up),((3,6),Right),((4,6),Right),((5,6),Down),((5,5),Down)]
+    , [((5,4),Right),((6,4),Right),((7,4),Down),((7,3),Down),((7,2),Down),((7,1),Down),((7,0),Left)]
+    ]
+    ,
+    Level 4 160 4 1 (0,0) (3,0) [] [[((1,0),Right), ((2,0),Right)]]
+    ]
+
+level0 = head levels
 
 update = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> m)
 
@@ -72,7 +98,7 @@ type State = {lv : Level,
              }
 
 state0 : State
-state0 = State level1 0 (playerBase level1.start) Nada
+state0 = State level0 0 (playerBase level0.start) Nada
 
 stepFun : Move -> State -> State
 stepFun m s = if okMove m s then doMove m s else {s|ot <- Nada}
@@ -109,25 +135,6 @@ doMove m {lv, adv, p} = let p' = case m of
 -- DRAW ----
 grid : Level -> (Int, Int) -> Form -> Form
 grid lv pos = move <| both toFloat <| both ((*) lv.side) <| pos
-
-arrow = polygon [ (2.357,180.198)
-                , (182.555,0)
-                , (2.357,-180.196)
-                , (-116.492,-180.196)
-                , (20.568,-43.131)
-                , (-248.765,-43.131)
-                , (-248.765,44.091)
-                , (19.61,44.091)
-                , (-116.707,180.411)
-                , (2.357,180.198)
-                ]
-
-arrowForm : Move -> Form
-arrowForm m = scale 0.15 <| case m of
-    Right -> arrow |> filled green
-    Up    -> arrow |> filled blue   |> rotate (turns 0.25)
-    Left  -> arrow |> filled purple |> rotate (turns 0.5)
-    Down  -> arrow |> filled red    |> rotate (turns 0.75)
 
 drawArrows : Level -> Int -> [Form]
 drawArrows lv adv = take (succ adv) lv.seq |> concat
@@ -188,9 +195,11 @@ main = layers <~ combine
 sound : Signal String
 sound = (show . .ot) <~ state
 
+{-
 soundJS = lift JS.fromString sound
 foreign export jsevent "sound"
     soundJS : Signal JS.JSString
+-}
 
 -- Below: should be library functions
 
