@@ -135,14 +135,8 @@ main = layers <~ combine
            [ scene <~ Window.dimensions ~ foldp (+) 0 (fps 20) ~ state
            , stats ]
 
-sound : Signal String
-sound = (show . .ot) <~ state
-
-{-
-soundJS = lift JS.fromString sound
-foreign export jsevent "sound"
-    soundJS : Signal JS.JSString
--}
+port sound : Signal String
+port sound = (show . .ot) <~ state
 
 -- Below: should be library functions
 
