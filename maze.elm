@@ -29,13 +29,12 @@ moves_pull = let
             _ -> Nothing
         in lift toMove pull |> keepIf isJust Nothing
 
-moves = moves_pull
+moves = moves_keyboard
 
-type Player = {i : Int, j : Int,
-               dx : Float, dy : Float
-              }
+type Player = {i : Int, j : Int, prev : Move }
 
-playerBase (i,j) = Player i j 0 0
+player0 : Level -> Player
+player0 lvl = Player (fst lvl.start) (snd lvl.start) lvl.face0
 
 update = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> m)
 
@@ -47,7 +46,7 @@ type State = {lv : Level,
              }
 
 state0 : State
-state0 = State level0 0 (playerBase level0.start) None
+state0 = State level0 0 (player0 level0) None
 
 stepFun : Move -> State -> State
 stepFun m s = if okMove m s then doMove m s else {s|ot <- Error}
@@ -67,17 +66,17 @@ okMove m {lv, p} = case m of
 
 doMove : Move -> State -> State
 doMove m {lv, adv, p} = let p' = case m of
-        Right -> {p|i <- p.i + 1}
-        Left  -> {p|i <- p.i - 1}
-        Up    -> {p|j <- p.j + 1}
-        Down  -> {p|j <- p.j - 1}
+        Right -> {p|i <- p.i + 1, prev <- m}
+        Left  -> {p|i <- p.i - 1, prev <- m}
+        Up    -> {p|j <- p.j + 1, prev <- m}
+        Down  -> {p|j <- p.j - 1, prev <- m}
     in if |(p'.i, p'.j) /= goal lv adv -> -- no level change
                State lv adv p' (Mv m)
           |succ adv /= length lv.seq ->   -- subgoal
-               State lv (succ adv) (playerBase lv.start) Subgoal
+               State lv (succ adv) (player0 lv) Subgoal
           |otherwise ->                   -- goal
                let lv' = nth (succ lv.number) levels
-               in State lv' 0 (playerBase lv'.start) Goal
+               in State lv' 0 (player0 lv') Goal
 
 
 -- DRAW ----
@@ -94,10 +93,23 @@ drawSquares lv = map (\p -> square (0.99*toFloat lv.side)
    <| pairs [0..pred lv.w] [0..pred lv.h]
 
 drawPlayer : Level -> Player -> Time -> Form
-drawPlayer lv p t = square (30 + 5*sin (t/200))
-                    |> filled black
-                    |> rotate (degrees 45)
-                    |> grid lv (p.i, p.j)
+drawPlayer lv p t = let
+    face : Move -> Form -> Form
+    face m = case m of
+        Up -> moveY 10
+        Down -> moveY -10
+        Left -> moveX -10
+        Right -> moveX 10
+                    in group
+    [ square (30 + 5*sin (t/200))
+        |> filled black
+        |> rotate (degrees 45)
+        |> grid lv (p.i, p.j)
+    , circle 5
+        |> filled yellow
+        |> grid lv (p.i, p.j)
+        |> face p.prev
+    ]
 
 drawGoal : Level -> Int -> Float -> Form
 drawGoal lv adv t = square (if isSubgoal lv adv then 25 else 50)
