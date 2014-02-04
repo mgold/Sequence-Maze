@@ -5,26 +5,31 @@ import JavaScript as JS
 
 import open Arrow
 import open Level
+import open Pull
 
 type Frac = Float -- semantically between 0 and 1
-type Movement = Maybe (Move, Frac)
 
-moves : Signal (Maybe Move)
-moves = let
+moves_keyboard : Signal (Maybe Move)
+moves_keyboard = let
     toMove : {x:Int, y:Int} -> Maybe Move
     toMove {x,y} = case (x,y) of
-                    (-1, 0) -> Just Left
-                    ( 1, 0) -> Just Right
-                    ( 0,-1) -> Just Down
-                    ( 0, 1) -> Just Up
-                    _ -> Nothing
+            (-1, 0) -> Just Left
+            ( 1, 0) -> Just Right
+            ( 0,-1) -> Just Down
+            ( 0, 1) -> Just Up
+            _ -> Nothing
         in lift toMove arrows |> keepIf isJust Nothing
 
-movement : Signal Movement
-movement = let toMovement m = case m of
-                    Just d -> Just (d, 1)
-                    Nothing -> Nothing
-           in toMovement <~ moves
+moves_pull = let
+    toMove s = case s of
+            Just "Left" -> Just Left
+            Just "Right" -> Just Right
+            Just "Up" -> Just Up
+            Just "Down" -> Just Down
+            _ -> Nothing
+        in lift toMove pull |> keepIf isJust Nothing
+
+moves = moves_pull
 
 type Player = {i : Int, j : Int,
                dx : Float, dy : Float
@@ -34,7 +39,7 @@ playerBase (i,j) = Player i j 0 0
 
 update = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> m)
 
-data Output = Mv Move | Subgoal | Goal | Nada
+data Output = Mv Move | Subgoal | Goal | Error | None
 type State = {lv : Level,
               adv : Int,
               p : Player,
@@ -42,10 +47,10 @@ type State = {lv : Level,
              }
 
 state0 : State
-state0 = State level0 0 (playerBase level0.start) Nada
+state0 = State level0 0 (playerBase level0.start) None
 
 stepFun : Move -> State -> State
-stepFun m s = if okMove m s then doMove m s else {s|ot <- Nada}
+stepFun m s = if okMove m s then doMove m s else {s|ot <- Error}
 
 state = foldp stepFun state0 update
 
@@ -129,10 +134,13 @@ stats = flow <~ constant down ~ combine
     , (\p -> (text . monospace . toText) ("("++show p.i++","++show p.j++")"))
         <~ lift .p state
     , lift asText <| (\{lv, adv} -> goal lv adv) <~ state
+    , lift asText pull
     ]
 
+clock : Signal Time
+clock = foldp (+) 0 <| fps 20
 main = layers <~ combine
-           [ scene <~ Window.dimensions ~ foldp (+) 0 (fps 20) ~ state
+           [ scene <~ Window.dimensions ~ clock ~ state
            , stats ]
 
 port sound : Signal String
