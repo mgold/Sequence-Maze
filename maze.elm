@@ -128,9 +128,7 @@ scene (w,h) t {lv,adv,p} = let
     center = move (-side * toFloat (lv.w-1) * 0.5, -side * toFloat (lv.h-1) * 0.5)
         in collage w h <|
         [ rect (toFloat w) (toFloat h) |> filled lightCharcoal ] 
-          ++ map center (drawSquares lv)
-          ++ map center (drawObstacles lv)
-          ++ map center (drawArrows lv adv) ++
+          ++ map center (drawSquares lv ++ drawObstacles lv ++ drawArrows lv adv) ++
         [ drawGoal lv adv t |> center
         , drawPlayer lv p t |> center
         ]
