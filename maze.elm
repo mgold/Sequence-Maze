@@ -56,13 +56,13 @@ state = foldp stepFun state0 update
 okMove : Move -> State -> Bool
 okMove m {lv, p} = case m of
     Right -> lv.w > p.i +1
-                && not (member (p.i+1, p.j) lv.obstacles)
+                && not (member (p.i, p.j) lv.obsRight)
     Left -> p.i > 0
-                && not (member (p.i-1, p.j) lv.obstacles)
+                && not (member (p.i-1, p.j) lv.obsRight)
     Up -> lv.h > p.j +1
-                && not (member (p.i, p.j+1) lv.obstacles)
+                && not (member (p.i, p.j) lv.obsUp)
     Down -> p.j > 0
-                && not (member (p.i, p.j-1) lv.obstacles)
+                && not (member (p.i, p.j-1) lv.obsUp)
 
 doMove : Move -> State -> State
 doMove m {lv, adv, p} = let p' = case m of
@@ -119,8 +119,15 @@ drawGoal lv adv t = square (if isSubgoal lv adv then 25 else 50)
 
 drawObstacles : Level -> [Form]
 drawObstacles lv = let
-    obstacleForm = square (0.9 * toFloat (lv.side)) |> filled darkCharcoal
-                   in map (\c -> grid lv c obstacleForm) lv.obstacles
+    side = toFloat lv.side
+    obstacleFormV = rect (0.1 * side) (1.1 * side)
+                        |> filled darkCharcoal
+                        |> moveX (0.5*side)
+    obstacleFormH = rect (1.1 * side) (0.1 * side)
+                        |> filled darkCharcoal
+                        |> moveY (0.5*side)
+                   in map (\c -> grid lv c obstacleFormV) lv.obsRight
+                   ++ map (\c -> grid lv c obstacleFormH) lv.obsUp
 
 scene : (Int,Int) -> Time -> State -> Element
 scene (w,h) t {lv,adv,p} = let

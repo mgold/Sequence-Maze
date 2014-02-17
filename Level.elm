@@ -11,7 +11,8 @@ type Level = {number: Int,
               h: Int,
               start: Coord,
               goal : Coord,
-              obstacles: [Coord],
+              obsRight: [Coord],
+              obsUp: [Coord],
               seq: [Sequence],
               face0: Move
               }
@@ -26,11 +27,13 @@ goal lv adv = if isSubgoal lv adv
 
 levels : [Level]
 levels = [
-    Level 0 150 4 3 (1,0) (3,0) [(1,1), (2,1), (2,0)]
+    Level 0 150 4 3 (1,0) (3,0) [(1,0), (0,1)] [(1,0)]
     [ [((1,0), Left), ((0,0), Up), ((0,1), Up)]
     , [((0,2), Right), ((1,2), Right), ((2,2), Right)]
     , [((3,2), Down), ((3,1), Down) ]
     ] Left
+
+    {--
     ,
     Level 1 80 3 8 (0,0) (2,7) [(0,1),(1,1),(1,3),(1,4),(1,5),(2,5)]
     [ [((0,0), Right), ((1,0), Right), ((2,0), Up)]
@@ -56,6 +59,7 @@ levels = [
     ] Right
     ,
     Level 4 160 4 1 (0,0) (3,0) [] [[((1,0),Right), ((2,0),Right)]] Right
+    --}
     ]
 
 level0 = head levels
