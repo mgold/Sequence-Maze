@@ -22,7 +22,7 @@ isSubgoal lv adv = succ adv < length lv.seq
 
 goal : Level -> Int -> Coord
 goal lv adv = if isSubgoal lv adv
-              then lv.seq |> nth (succ adv) |> head |> fst
+              then lv.seq |> unsafeNth (succ adv) |> head |> fst
               else lv.goal
 
 levels : [Level]
@@ -68,5 +68,11 @@ level0 = head levels
 
 succ = (+) 1
 
-nth : Int -> [a] -> a
-nth i xs = head <| drop i xs
+
+unsafeNth : Int -> [a] -> a
+unsafeNth i xs = head <| drop i xs
+
+nth : Int -> [a] -> Maybe a
+nth i xs = case drop i xs of
+    [] -> Nothing
+    x::_ -> Just x

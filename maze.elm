@@ -75,7 +75,7 @@ doMove m {lv, adv, p} = let p' = case m of
           |succ adv /= length lv.seq ->   -- subgoal
                State lv (succ adv) (player0 lv) Subgoal
           |otherwise ->                   -- goal
-               let lv' = nth (succ lv.number) levels
+               let lv' = maybe (unsafeNth 0 levels) id <| nth (succ lv.number) levels
                in State lv' 0 (player0 lv') Goal
 
 
