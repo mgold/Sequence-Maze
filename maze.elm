@@ -34,7 +34,7 @@ moves = moves_keyboard
 type Player = {i : Int, j : Int, prev : Move }
 
 player0 : Level -> Player
-player0 lvl = Player (fst lvl.start) (snd lvl.start) lvl.face0
+player0 lvl = Player (fst lvl.start) (snd lvl.start) (snd . head . head <| lvl.seq)
 
 clock : Signal Time
 clock = foldp (+) 0 <| fps 20
