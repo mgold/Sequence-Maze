@@ -49,7 +49,7 @@ type Play = {lv : Level,
              ot : Output
             }
 data State = Welcome | Game Play | YouWin Int
-movesToResetWin = 3
+movesToResetWin = 2
 
 state0 : State
 state0 = Welcome
@@ -139,8 +139,10 @@ drawObstacles lv = let
 
 scene : (Int,Int) -> Time -> State -> Element
 scene (w,h) t s = case s of
-    Welcome -> asText "Welcome!"
-    YouWin _ -> asText "You Win!"
+    Welcome -> collage w h [rect (toFloat w) (toFloat h) |> filled lightCharcoal
+        , toText "Welcome" |> Text.height 48 |> centered|> toForm]
+    YouWin _ -> collage w h [rect (toFloat w) (toFloat h) |> filled lightCharcoal
+        , toText "You Win!" |> Text.height 48 |> centered|> toForm]
     Game {lv,adv,p} -> let
         side = toFloat lv.side
         center = move (-side * toFloat (lv.w-1) * 0.5, -side * toFloat (lv.h-1) * 0.5)
