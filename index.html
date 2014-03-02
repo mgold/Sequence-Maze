@@ -53,7 +53,7 @@ Elm.Main.make = function (_elm)
                                               case
                                               "[]" :
                                                 return false;}
-                                             _E.Case($moduleName,"between lines 201 and 203");
+                                             _E.Case($moduleName,"between lines 187 and 189");
                                            }();
                                   });
                   var pred = Basics.flip(F2(function (x,y)
@@ -80,7 +80,7 @@ Elm.Main.make = function (_elm)
                                                       "[]" :
                                                         return _J.toList([]);}
                                                      _E.Case($moduleName,
-                                                             "between lines 194 and 196");
+                                                             "between lines 180 and 182");
                                                    }();
                                           }();
                                  });
@@ -92,7 +92,7 @@ Elm.Main.make = function (_elm)
                                            {case
                                             "_Tuple2" :
                                               return {ctor: "_Tuple2", _0: f(_v6._0), _1: f(_v6._1)};}
-                                           _E.Case($moduleName,"on line 191, column 18 to 26");
+                                           _E.Case($moduleName,"on line 177, column 18 to 26");
                                          }();
                                 });
                   var movePolar = function (_v10)
@@ -103,7 +103,7 @@ Elm.Main.make = function (_elm)
                                              {case
                                               "_Tuple2" :
                                                 return Graphics.Collage.move(Basics.fromPolar({ctor: "_Tuple2", _0: _v10._0, _1: _v10._1}));}
-                                             _E.Case($moduleName,"on line 188, column 24 to 51");
+                                             _E.Case($moduleName,"on line 174, column 24 to 51");
                                            }();
                                   };
                   var stats = Signal.constant(Graphics.Element.empty);
@@ -128,7 +128,7 @@ Elm.Main.make = function (_elm)
                                                                                 lv,
                                                                                 _v14._0)(Arrow.arrowForm(_v14._1));}
                                                                    _E.Case($moduleName,
-                                                                           "on line 98, column 42 to 66");
+                                                                           "on line 84, column 42 to 66");
                                                                  }();
                                                         })(List.concat(A2(List.take,
                                                                           Level.succ(adv),
@@ -167,7 +167,7 @@ Elm.Main.make = function (_elm)
                                                                         "Up" :
                                                                           return Graphics.Collage.moveY(10);}
                                                                        _E.Case($moduleName,
-                                                                               "between lines 108 and 113");
+                                                                               "between lines 94 and 99");
                                                                      }();
                                                             };
                                                  return Graphics.Collage.group(_J.toList([A2(grid,
@@ -251,7 +251,7 @@ Elm.Main.make = function (_elm)
                                                                                                           {ctor: "_Tuple2", _0: _v19.p.i, _1: _v19.p.j},
                                                                                                           _v19.lv.obsUp));}
                                                       _E.Case($moduleName,
-                                                              "between lines 68 and 76");
+                                                              "between lines 54 and 62");
                                                     }();
                                            }();
                                   });
@@ -322,9 +322,9 @@ Elm.Main.make = function (_elm)
                                                                                                                                 Basics.toFloat(_v22._1))),
                                                                                 Graphics.Collage.toForm(Text.centered(Text.height(48)(Text.toText("You Win!"))))]));}
                                                         _E.Case($moduleName,
-                                                                "between lines 143 and 172");
+                                                                "between lines 129 and 158");
                                                       }();}
-                                            _E.Case($moduleName,"between lines 143 and 172");
+                                            _E.Case($moduleName,"between lines 129 and 158");
                                           }();
                                  });
                   var Play = F4(function (a,b,c,d)
@@ -390,7 +390,7 @@ Elm.Main.make = function (_elm)
                                                                                        ["prev",m]],
                                                                                       _v29.p);}
                                                                  _E.Case($moduleName,
-                                                                         "between lines 79 and 84");
+                                                                         "between lines 65 and 70");
                                                                }();
                                                       return ! _U.eq({ctor: "_Tuple2", _0: p$.i, _1: p$.j},
                                                                      A2(Level.goal,
@@ -442,58 +442,55 @@ Elm.Main.make = function (_elm)
                                                "YouWin" :
                                                  return _U.eq(s._0 + 1,
                                                               movesToResetWin) ? Welcome : YouWin(s._0 + 1);}
-                                              _E.Case($moduleName,"between lines 60 and 63");
+                                              _E.Case($moduleName,"between lines 46 and 49");
                                             }();
                                    });
-                  var moves_keyboard = function ()
-                                       {
-                                         var toMove = function (_v35)
+                  var moves = function ()
+                              {
+                                var toMove = function (_v35)
+                                             {
+                                               return function ()
                                                       {
                                                         return function ()
                                                                {
-                                                                 return function ()
-                                                                        {
-                                                                          var _v37 = {ctor: "_Tuple2", _0: _v35.x, _1: _v35.y};
-                                                                          switch (_v37.ctor)
-                                                                          {case
-                                                                           "_Tuple2" :
-                                                                             switch (_v37._0)
-                                                                             {case
-                                                                              -1 :
-                                                                                switch (_v37._1)
-                                                                                {case
-                                                                                 0 :
-                                                                                   return Maybe.Just(Arrow.Left);}
-                                                                                break;
-                                                                              case
-                                                                              0 :
-                                                                                switch (_v37._1)
-                                                                                {case
-                                                                                 -1 :
-                                                                                   return Maybe.Just(Arrow.Down);
-                                                                                 case
-                                                                                 1 :
-                                                                                   return Maybe.Just(Arrow.Up);}
-                                                                                break;
-                                                                              case
-                                                                              1 :
-                                                                                switch (_v37._1)
-                                                                                {case
-                                                                                 0 :
-                                                                                   return Maybe.Just(Arrow.Right);}
-                                                                                break;}
-                                                                             break;}
-                                                                          return Maybe.Nothing;
-                                                                        }();
+                                                                 var _v37 = {ctor: "_Tuple2", _0: _v35.x, _1: _v35.y};
+                                                                 switch (_v37.ctor)
+                                                                 {case
+                                                                  "_Tuple2" :
+                                                                    switch (_v37._0)
+                                                                    {case
+                                                                     -1 :
+                                                                       switch (_v37._1)
+                                                                       {case
+                                                                        0 :
+                                                                          return Maybe.Just(Arrow.Left);}
+                                                                       break;
+                                                                     case
+                                                                     0 :
+                                                                       switch (_v37._1)
+                                                                       {case
+                                                                        -1 :
+                                                                          return Maybe.Just(Arrow.Down);
+                                                                        case
+                                                                        1 :
+                                                                          return Maybe.Just(Arrow.Up);}
+                                                                       break;
+                                                                     case
+                                                                     1 :
+                                                                       switch (_v37._1)
+                                                                       {case
+                                                                        0 :
+                                                                          return Maybe.Just(Arrow.Right);}
+                                                                       break;}
+                                                                    break;}
+                                                                 return Maybe.Nothing;
                                                                }();
-                                                      };
-                                         return A2(Signal.keepIf,
-                                                   Maybe.isJust,
-                                                   Maybe.Nothing)(A2(Signal.lift,
-                                                                     toMove,
-                                                                     Keyboard.arrows));
-                                       }();
-                  var moves = moves_keyboard;
+                                                      }();
+                                             };
+                                return A2(Signal.keepIf,Maybe.isJust,Maybe.Nothing)(A2(Signal.lift,
+                                                                                       toMove,
+                                                                                       Keyboard.arrows));
+                              }();
                   var update = A2(keepJusts,Arrow.Right,moves);
                   var state = A3(Signal.foldp,stepFun,state0,update);
                   var main = A2(Signal._op["<~"],
@@ -527,7 +524,7 @@ Elm.Main.make = function (_elm)
                                                                }();
                                                       },
                                                       state));
-                  _elm.Main.values = {_op: _op, moves_keyboard: moves_keyboard, moves: moves, player0: player0, clock: clock, update: update, movesToResetWin: movesToResetWin, state0: state0, stepFun: stepFun, state: state, okMove: okMove, doMove: doMove, grid: grid, drawArrows: drawArrows, drawSquares: drawSquares, drawPlayer: drawPlayer, drawGoal: drawGoal, drawObstacles: drawObstacles, scene: scene, stats: stats, main: main, movePolar: movePolar, both: both, pairs: pairs, pred: pred, member: member, keepJusts: keepJusts, Mv: Mv, Subgoal: Subgoal, Goal: Goal, Error: Error, None: None, Welcome: Welcome, Game: Game, YouWin: YouWin, Player: Player, Play: Play};
+                  _elm.Main.values = {_op: _op, moves: moves, player0: player0, clock: clock, update: update, movesToResetWin: movesToResetWin, state0: state0, stepFun: stepFun, state: state, okMove: okMove, doMove: doMove, grid: grid, drawArrows: drawArrows, drawSquares: drawSquares, drawPlayer: drawPlayer, drawGoal: drawGoal, drawObstacles: drawObstacles, scene: scene, stats: stats, main: main, movePolar: movePolar, both: both, pairs: pairs, pred: pred, member: member, keepJusts: keepJusts, Mv: Mv, Subgoal: Subgoal, Goal: Goal, Error: Error, None: None, Welcome: Welcome, Game: Game, YouWin: YouWin, Player: Player, Play: Play};
                   return _elm.Main.values;
                 };Elm.Level = Elm.Level || {};
 Elm.Level.make = function (_elm)
