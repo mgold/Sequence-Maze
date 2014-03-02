@@ -1,0 +1,838 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="UTF-8"><title>maze</title><script type="text/javascript" src="./elm-runtime.js"></script><script type="text/javascript">Elm.Main = Elm.Main || {};
+Elm.Main.make = function (_elm)
+                {
+                  "use strict";
+                  _elm.Main = _elm.Main || {};
+                  if (_elm.Main.values)
+                  return _elm.Main.values;
+                  var _N = Elm.Native,
+                      _U = _N.Utils.make(_elm),
+                      _L = _N.List.make(_elm),
+                      _E = _N.Error.make(_elm),
+                      _J = _N.JavaScript.make(_elm),
+                      $moduleName = "Main";
+                  var Arrow = Elm.Arrow.make(_elm);
+                  var Basics = Elm.Basics.make(_elm);
+                  var Color = Elm.Color.make(_elm);
+                  var Graphics = Graphics || {};
+                  Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+                  var Graphics = Graphics || {};
+                  Graphics.Element = Elm.Graphics.Element.make(_elm);
+                  var Http = Elm.Http.make(_elm);
+                  var JavaScript = Elm.JavaScript.make(_elm);
+                  var Keyboard = Elm.Keyboard.make(_elm);
+                  var Level = Elm.Level.make(_elm);
+                  var List = Elm.List.make(_elm);
+                  var Maybe = Elm.Maybe.make(_elm);
+                  var Native = Native || {};
+                  Native.Ports = Elm.Native.Ports.make(_elm);
+                  var Prelude = Elm.Prelude.make(_elm);
+                  var Pull = Elm.Pull.make(_elm);
+                  var Signal = Elm.Signal.make(_elm);
+                  var String = Elm.String.make(_elm);
+                  var Text = Elm.Text.make(_elm);
+                  var Time = Elm.Time.make(_elm);
+                  var Window = Elm.Window.make(_elm);
+                  var _op = {};
+                  var keepJusts = F2(function (a,sa)
+                                     {
+                                       return A2(Signal.lift,
+                                                 A2(Maybe.maybe,a,Basics.id),
+                                                 A3(Signal.keepIf,Maybe.isJust,Maybe.Nothing,sa));
+                                     });
+                  var member = F2(function (findMe,list)
+                                  {
+                                    return function ()
+                                           {
+                                             switch (list.ctor)
+                                             {case
+                                              "::" :
+                                                return _U.eq(list._0,findMe) ? true : A2(member,
+                                                                                         findMe,
+                                                                                         list._1);
+                                              case
+                                              "[]" :
+                                                return false;}
+                                             _E.Case($moduleName,"between lines 202 and 204");
+                                           }();
+                                  });
+                  var pred = Basics.flip(F2(function (x,y)
+                                            {
+                                              return x - y;
+                                            }))(1);
+                  var pairs = F2(function (xs,ys)
+                                 {
+                                   return function ()
+                                          {
+                                            var n = List.length(ys);
+                                            return function ()
+                                                   {
+                                                     switch (xs.ctor)
+                                                     {case
+                                                      "::" :
+                                                        return _L.append(A2(List.zip,
+                                                                            A2(List.map,
+                                                                               Basics.always(xs._0),
+                                                                               _L.range(1,n)),
+                                                                            ys),
+                                                                         A2(pairs,xs._1,ys));
+                                                      case
+                                                      "[]" :
+                                                        return _J.toList([]);}
+                                                     _E.Case($moduleName,
+                                                             "between lines 195 and 197");
+                                                   }();
+                                          }();
+                                 });
+                  var both = F2(function (f,_v6)
+                                {
+                                  return function ()
+                                         {
+                                           switch (_v6.ctor)
+                                           {case
+                                            "_Tuple2" :
+                                              return {ctor: "_Tuple2", _0: f(_v6._0), _1: f(_v6._1)};}
+                                           _E.Case($moduleName,"on line 192, column 18 to 26");
+                                         }();
+                                });
+                  var movePolar = function (_v10)
+                                  {
+                                    return function ()
+                                           {
+                                             switch (_v10.ctor)
+                                             {case
+                                              "_Tuple2" :
+                                                return Graphics.Collage.move(Basics.fromPolar({ctor: "_Tuple2", _0: _v10._0, _1: _v10._1}));}
+                                             _E.Case($moduleName,"on line 189, column 24 to 51");
+                                           }();
+                                  };
+                  var stats = Signal.constant(Graphics.Element.empty);
+                  var grid = F2(function (lv,pos)
+                                {
+                                  return Graphics.Collage.move(both(Basics.toFloat)(both(F2(function (x,
+                                                                                                      y)
+                                                                                            {
+                                                                                              return x * y;
+                                                                                            })(lv.side))(pos)));
+                                });
+                  var drawArrows = F2(function (lv,adv)
+                                      {
+                                        return List.map(function (_v14)
+                                                        {
+                                                          return function ()
+                                                                 {
+                                                                   switch (_v14.ctor)
+                                                                   {case
+                                                                    "_Tuple2" :
+                                                                      return A2(grid,
+                                                                                lv,
+                                                                                _v14._0)(Arrow.arrowForm(_v14._1));}
+                                                                   _E.Case($moduleName,
+                                                                           "on line 99, column 42 to 66");
+                                                                 }();
+                                                        })(List.concat(A2(List.take,
+                                                                          Level.succ(adv),
+                                                                          lv.seq)));
+                                      });
+                  var drawSquares = function (lv)
+                                    {
+                                      return List.map(function (p)
+                                                      {
+                                                        return A2(grid,
+                                                                  lv,
+                                                                  p)(Graphics.Collage.filled(Color.white)(Graphics.Collage.square(0.99 * Basics.toFloat(lv.side))));
+                                                      })(A2(pairs,
+                                                            _L.range(0,pred(lv.w)),
+                                                            _L.range(0,pred(lv.h))));
+                                    };
+                  var drawPlayer = F3(function (lv,p,t)
+                                      {
+                                        return function ()
+                                               {
+                                                 var face = function (m)
+                                                            {
+                                                              return function ()
+                                                                     {
+                                                                       switch (m.ctor)
+                                                                       {case
+                                                                        "Down" :
+                                                                          return Graphics.Collage.moveY(-10);
+                                                                        case
+                                                                        "Left" :
+                                                                          return Graphics.Collage.moveX(-10);
+                                                                        case
+                                                                        "Right" :
+                                                                          return Graphics.Collage.moveX(10);
+                                                                        case
+                                                                        "Up" :
+                                                                          return Graphics.Collage.moveY(10);}
+                                                                       _E.Case($moduleName,
+                                                                               "between lines 109 and 114");
+                                                                     }();
+                                                            };
+                                                 return Graphics.Collage.group(_J.toList([A2(grid,
+                                                                                             lv,
+                                                                                             {ctor: "_Tuple2", _0: p.i, _1: p.j})(Graphics.Collage.rotate(Basics.degrees(45))(Graphics.Collage.filled(Color.black)(Graphics.Collage.square(30 + 5 * Basics.sin(t / 200))))),
+                                                                                          face(p.prev)(A2(grid,
+                                                                                                          lv,
+                                                                                                          {ctor: "_Tuple2", _0: p.i, _1: p.j})(Graphics.Collage.filled(Color.yellow)(Graphics.Collage.circle(5))))]));
+                                               }();
+                                      });
+                  var drawGoal = F3(function (lv,adv,t)
+                                    {
+                                      return A2(grid,
+                                                lv,
+                                                A2(Level.goal,
+                                                   lv,
+                                                   adv))(Graphics.Collage.rotate(Basics.turns(t / 3000))(Graphics.Collage.filled(Color.yellow)(Graphics.Collage.square(A2(Level.isSubgoal,
+                                                                                                                                                                          lv,
+                                                                                                                                                                          adv) ? 25 : 50))));
+                                    });
+                  var drawObstacles = function (lv)
+                                      {
+                                        return function ()
+                                               {
+                                                 var side = Basics.toFloat(lv.side);
+                                                 var obstacleFormV = Graphics.Collage.moveX(0.5 * side)(Graphics.Collage.filled(Color.darkCharcoal)(A2(Graphics.Collage.rect,
+                                                                                                                                                       0.1 * side,
+                                                                                                                                                       1.1 * side)));
+                                                 var obstacleFormH = Graphics.Collage.moveY(0.5 * side)(Graphics.Collage.filled(Color.darkCharcoal)(A2(Graphics.Collage.rect,
+                                                                                                                                                       1.1 * side,
+                                                                                                                                                       0.1 * side)));
+                                                 return _L.append(A2(List.map,
+                                                                     function (c)
+                                                                     {
+                                                                       return A3(grid,
+                                                                                 lv,
+                                                                                 c,
+                                                                                 obstacleFormV);
+                                                                     },
+                                                                     lv.obsRight),
+                                                                  A2(List.map,
+                                                                     function (c)
+                                                                     {
+                                                                       return A3(grid,
+                                                                                 lv,
+                                                                                 c,
+                                                                                 obstacleFormH);
+                                                                     },
+                                                                     lv.obsUp));
+                                               }();
+                                      };
+                  var okMove = F2(function (m,_v19)
+                                  {
+                                    return function ()
+                                           {
+                                             return function ()
+                                                    {
+                                                      switch (m.ctor)
+                                                      {case
+                                                       "Down" :
+                                                         return _U.cmp(_v19.p.j,
+                                                                       0) > 0 && Basics.not(A2(member,
+                                                                                               {ctor: "_Tuple2", _0: _v19.p.i, _1: _v19.p.j - 1},
+                                                                                               _v19.lv.obsUp));
+                                                       case
+                                                       "Left" :
+                                                         return _U.cmp(_v19.p.i,
+                                                                       0) > 0 && Basics.not(A2(member,
+                                                                                               {ctor: "_Tuple2", _0: _v19.p.i - 1, _1: _v19.p.j},
+                                                                                               _v19.lv.obsRight));
+                                                       case
+                                                       "Right" :
+                                                         return _U.cmp(_v19.lv.w,
+                                                                       _v19.p.i + 1) > 0 && Basics.not(A2(member,
+                                                                                                          {ctor: "_Tuple2", _0: _v19.p.i, _1: _v19.p.j},
+                                                                                                          _v19.lv.obsRight));
+                                                       case
+                                                       "Up" :
+                                                         return _U.cmp(_v19.lv.h,
+                                                                       _v19.p.j + 1) > 0 && Basics.not(A2(member,
+                                                                                                          {ctor: "_Tuple2", _0: _v19.p.i, _1: _v19.p.j},
+                                                                                                          _v19.lv.obsUp));}
+                                                      _E.Case($moduleName,
+                                                              "between lines 69 and 77");
+                                                    }();
+                                           }();
+                                  });
+                  var movesToResetWin = 2;
+                  var YouWin = function (a)
+                               {
+                                 return {ctor: "YouWin", _0: a};
+                               };
+                  var Game = function (a)
+                             {
+                               return {ctor: "Game", _0: a};
+                             };
+                  var Welcome = {ctor: "Welcome"};
+                  var state0 = Welcome;
+                  var scene = F3(function (_v22,t,s)
+                                 {
+                                   return function ()
+                                          {
+                                            switch (_v22.ctor)
+                                            {case
+                                             "_Tuple2" :
+                                               return function ()
+                                                      {
+                                                        switch (s.ctor)
+                                                        {case
+                                                         "Game" :
+                                                           return function ()
+                                                                  {
+                                                                    var side = Basics.toFloat(s._0.lv.side);
+                                                                    var center = Graphics.Collage.move({ctor: "_Tuple2", _0: (0 - side) * Basics.toFloat(s._0.lv.w - 1) * 0.5, _1: (0 - side) * Basics.toFloat(s._0.lv.h - 1) * 0.5});
+                                                                    return A2(Graphics.Collage.collage,
+                                                                              _v22._0,
+                                                                              _v22._1)(_L.append(_J.toList([Graphics.Collage.filled(Color.lightCharcoal)(A2(Graphics.Collage.rect,
+                                                                                                                                                            Basics.toFloat(_v22._0),
+                                                                                                                                                            Basics.toFloat(_v22._1)))]),
+                                                                                                 _L.append(A2(List.map,
+                                                                                                              center,
+                                                                                                              _L.append(drawSquares(s._0.lv),
+                                                                                                                        _L.append(drawObstacles(s._0.lv),
+                                                                                                                                  A2(drawArrows,
+                                                                                                                                     s._0.lv,
+                                                                                                                                     s._0.adv)))),
+                                                                                                           _J.toList([center(A3(drawGoal,
+                                                                                                                                s._0.lv,
+                                                                                                                                s._0.adv,
+                                                                                                                                t)),
+                                                                                                                      center(A3(drawPlayer,
+                                                                                                                                s._0.lv,
+                                                                                                                                s._0.p,
+                                                                                                                                t))]))));
+                                                                  }();
+                                                         case
+                                                         "Welcome" :
+                                                           return A3(Graphics.Collage.collage,
+                                                                     _v22._0,
+                                                                     _v22._1,
+                                                                     _J.toList([Graphics.Collage.filled(Color.lightCharcoal)(A2(Graphics.Collage.rect,
+                                                                                                                                Basics.toFloat(_v22._0),
+                                                                                                                                Basics.toFloat(_v22._1))),
+                                                                                Graphics.Collage.toForm(Text.centered(Text.height(48)(Text.toText("Welcome"))))]));
+                                                         case
+                                                         "YouWin" :
+                                                           return A3(Graphics.Collage.collage,
+                                                                     _v22._0,
+                                                                     _v22._1,
+                                                                     _J.toList([Graphics.Collage.filled(Color.lightCharcoal)(A2(Graphics.Collage.rect,
+                                                                                                                                Basics.toFloat(_v22._0),
+                                                                                                                                Basics.toFloat(_v22._1))),
+                                                                                Graphics.Collage.toForm(Text.centered(Text.height(48)(Text.toText("You Win!"))))]));}
+                                                        _E.Case($moduleName,
+                                                                "between lines 144 and 173");
+                                                      }();}
+                                            _E.Case($moduleName,"between lines 144 and 173");
+                                          }();
+                                 });
+                  var Play = F4(function (a,b,c,d)
+                                {
+                                  return {_: {}, adv: b, lv: a, ot: d, p: c};
+                                });
+                  var None = {ctor: "None"};
+                  var Error = {ctor: "Error"};
+                  var Goal = {ctor: "Goal"};
+                  var Subgoal = {ctor: "Subgoal"};
+                  var Mv = function (a)
+                           {
+                             return {ctor: "Mv", _0: a};
+                           };
+                  var clock = A2(Signal.foldp,
+                                 F2(function (x,y)
+                                    {
+                                      return x + y;
+                                    }),
+                                 0)(Time.fps(20));
+                  var Player = F3(function (a,b,c)
+                                  {
+                                    return {_: {}, i: a, j: b, prev: c};
+                                  });
+                  var player0 = function (lvl)
+                                {
+                                  return A3(Player,
+                                            Basics.fst(lvl.start),
+                                            Basics.snd(lvl.start),
+                                            lvl.face0);
+                                };
+                  var doMove = F2(function (m,_v29)
+                                  {
+                                    return function ()
+                                           {
+                                             return function ()
+                                                    {
+                                                      var p$ = function ()
+                                                               {
+                                                                 switch (m.ctor)
+                                                                 {case
+                                                                  "Down" :
+                                                                    return _U.replace([["j",
+                                                                                        _v29.p.j - 1],
+                                                                                       ["prev",m]],
+                                                                                      _v29.p);
+                                                                  case
+                                                                  "Left" :
+                                                                    return _U.replace([["i",
+                                                                                        _v29.p.i - 1],
+                                                                                       ["prev",m]],
+                                                                                      _v29.p);
+                                                                  case
+                                                                  "Right" :
+                                                                    return _U.replace([["i",
+                                                                                        _v29.p.i + 1],
+                                                                                       ["prev",m]],
+                                                                                      _v29.p);
+                                                                  case
+                                                                  "Up" :
+                                                                    return _U.replace([["j",
+                                                                                        _v29.p.j + 1],
+                                                                                       ["prev",m]],
+                                                                                      _v29.p);}
+                                                                 _E.Case($moduleName,
+                                                                         "between lines 80 and 85");
+                                                               }();
+                                                      return ! _U.eq({ctor: "_Tuple2", _0: p$.i, _1: p$.j},
+                                                                     A2(Level.goal,
+                                                                        _v29.lv,
+                                                                        _v29.adv)) ? Game(A4(Play,
+                                                                                             _v29.lv,
+                                                                                             _v29.adv,
+                                                                                             p$,
+                                                                                             Mv(m))) : ! _U.eq(Level.succ(_v29.adv),
+                                                                                                               List.length(_v29.lv.seq)) ? Game(A4(Play,
+                                                                                                                                                   _v29.lv,
+                                                                                                                                                   Level.succ(_v29.adv),
+                                                                                                                                                   player0(_v29.lv),
+                                                                                                                                                   Subgoal)) : A2(Maybe.maybe,
+                                                                                                                                                                  YouWin(0),
+                                                                                                                                                                  function (lv$)
+                                                                                                                                                                  {
+                                                                                                                                                                    return Game(A4(Play,
+                                                                                                                                                                                   lv$,
+                                                                                                                                                                                   0,
+                                                                                                                                                                                   player0(lv$),
+                                                                                                                                                                                   Goal));
+                                                                                                                                                                  })(A2(Level.nth,
+                                                                                                                                                                        Level.succ(_v29.lv.number),
+                                                                                                                                                                        Level.levels));
+                                                    }();
+                                           }();
+                                  });
+                  var stepFun = F2(function (m,s)
+                                   {
+                                     return function ()
+                                            {
+                                              switch (s.ctor)
+                                              {case
+                                               "Game" :
+                                                 return A2(okMove,m,s._0) ? A2(doMove,
+                                                                               m,
+                                                                               s._0) : Game(_U.replace([["ot",
+                                                                                                         Error]],
+                                                                                                       s._0));
+                                               case
+                                               "Welcome" :
+                                                 return Game(A4(Play,
+                                                                Level.level0,
+                                                                0,
+                                                                player0(Level.level0),
+                                                                None));
+                                               case
+                                               "YouWin" :
+                                                 return _U.eq(s._0 + 1,
+                                                              movesToResetWin) ? Welcome : YouWin(s._0 + 1);}
+                                              _E.Case($moduleName,"between lines 61 and 64");
+                                            }();
+                                   });
+                  var moves_pull = function ()
+                                   {
+                                     var toMove = function (s)
+                                                  {
+                                                    return function ()
+                                                           {
+                                                             switch (s.ctor)
+                                                             {case
+                                                              "Just" :
+                                                                switch (s._0)
+                                                                {case
+                                                                 "Down" :
+                                                                   return Maybe.Just(Arrow.Down);
+                                                                 case
+                                                                 "Left" :
+                                                                   return Maybe.Just(Arrow.Left);
+                                                                 case
+                                                                 "Right" :
+                                                                   return Maybe.Just(Arrow.Right);
+                                                                 case
+                                                                 "Up" :
+                                                                   return Maybe.Just(Arrow.Up);}
+                                                                break;}
+                                                             return Maybe.Nothing;
+                                                           }();
+                                                  };
+                                     return A2(Signal.keepIf,
+                                               Maybe.isJust,
+                                               Maybe.Nothing)(A2(Signal.lift,toMove,Pull.pull));
+                                   }();
+                  var moves = moves_pull;
+                  var update = A2(keepJusts,Arrow.Right,moves);
+                  var state = A3(Signal.foldp,stepFun,state0,update);
+                  var main = A2(Signal._op["<~"],
+                                Graphics.Element.layers,
+                                Signal.combine(_J.toList([A2(Signal._op["~"],
+                                                             A2(Signal._op["~"],
+                                                                A2(Signal._op["<~"],
+                                                                   scene,
+                                                                   Window.dimensions),
+                                                                clock),
+                                                             state),
+                                                          stats])));
+                  var sound = Native.Ports.portOut("sound",
+                                                   Native.Ports.outgoingSignal(function (v)
+                                                                               {
+                                                                                 return _J.fromString(v);
+                                                                               }),
+                                                   A2(Signal._op["<~"],
+                                                      function (s)
+                                                      {
+                                                        return function ()
+                                                               {
+                                                                 switch (s.ctor)
+                                                                 {case
+                                                                  "Game" :
+                                                                    return Prelude.show(function (_)
+                                                                                        {
+                                                                                          return _.ot;
+                                                                                        }(s._0));}
+                                                                 return "None";
+                                                               }();
+                                                      },
+                                                      state));
+                  var moves_keyboard = function ()
+                                       {
+                                         var toMove = function (_v39)
+                                                      {
+                                                        return function ()
+                                                               {
+                                                                 return function ()
+                                                                        {
+                                                                          var _v41 = {ctor: "_Tuple2", _0: _v39.x, _1: _v39.y};
+                                                                          switch (_v41.ctor)
+                                                                          {case
+                                                                           "_Tuple2" :
+                                                                             switch (_v41._0)
+                                                                             {case
+                                                                              -1 :
+                                                                                switch (_v41._1)
+                                                                                {case
+                                                                                 0 :
+                                                                                   return Maybe.Just(Arrow.Left);}
+                                                                                break;
+                                                                              case
+                                                                              0 :
+                                                                                switch (_v41._1)
+                                                                                {case
+                                                                                 -1 :
+                                                                                   return Maybe.Just(Arrow.Down);
+                                                                                 case
+                                                                                 1 :
+                                                                                   return Maybe.Just(Arrow.Up);}
+                                                                                break;
+                                                                              case
+                                                                              1 :
+                                                                                switch (_v41._1)
+                                                                                {case
+                                                                                 0 :
+                                                                                   return Maybe.Just(Arrow.Right);}
+                                                                                break;}
+                                                                             break;}
+                                                                          return Maybe.Nothing;
+                                                                        }();
+                                                               }();
+                                                      };
+                                         return A2(Signal.keepIf,
+                                                   Maybe.isJust,
+                                                   Maybe.Nothing)(A2(Signal.lift,
+                                                                     toMove,
+                                                                     Keyboard.arrows));
+                                       }();
+                  _elm.Main.values = {_op: _op, moves_keyboard: moves_keyboard, moves_pull: moves_pull, moves: moves, player0: player0, clock: clock, update: update, movesToResetWin: movesToResetWin, state0: state0, stepFun: stepFun, state: state, okMove: okMove, doMove: doMove, grid: grid, drawArrows: drawArrows, drawSquares: drawSquares, drawPlayer: drawPlayer, drawGoal: drawGoal, drawObstacles: drawObstacles, scene: scene, stats: stats, main: main, movePolar: movePolar, both: both, pairs: pairs, pred: pred, member: member, keepJusts: keepJusts, Mv: Mv, Subgoal: Subgoal, Goal: Goal, Error: Error, None: None, Welcome: Welcome, Game: Game, YouWin: YouWin, Player: Player, Play: Play};
+                  return _elm.Main.values;
+                };Elm.Level = Elm.Level || {};
+Elm.Level.make = function (_elm)
+                 {
+                   "use strict";
+                   _elm.Level = _elm.Level || {};
+                   if (_elm.Level.values)
+                   return _elm.Level.values;
+                   var _N = Elm.Native,
+                       _U = _N.Utils.make(_elm),
+                       _L = _N.List.make(_elm),
+                       _E = _N.Error.make(_elm),
+                       _J = _N.JavaScript.make(_elm),
+                       $moduleName = "Level";
+                   var Arrow = Elm.Arrow.make(_elm);
+                   var Basics = Elm.Basics.make(_elm);
+                   var Color = Elm.Color.make(_elm);
+                   var Graphics = Graphics || {};
+                   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+                   var Graphics = Graphics || {};
+                   Graphics.Element = Elm.Graphics.Element.make(_elm);
+                   var List = Elm.List.make(_elm);
+                   var Maybe = Elm.Maybe.make(_elm);
+                   var Native = Native || {};
+                   Native.Ports = Elm.Native.Ports.make(_elm);
+                   var Prelude = Elm.Prelude.make(_elm);
+                   var Signal = Elm.Signal.make(_elm);
+                   var String = Elm.String.make(_elm);
+                   var Text = Elm.Text.make(_elm);
+                   var Time = Elm.Time.make(_elm);
+                   var _op = {};
+                   var nth = F2(function (i,xs)
+                                {
+                                  return function ()
+                                         {
+                                           var _v0 = A2(List.drop,i,xs);
+                                           switch (_v0.ctor)
+                                           {case
+                                            "::" :
+                                              return Maybe.Just(_v0._0);
+                                            case
+                                            "[]" :
+                                              return Maybe.Nothing;}
+                                           _E.Case($moduleName,"between lines 70 and 72");
+                                         }();
+                                });
+                   var unsafeNth = F2(function (i,xs)
+                                      {
+                                        return List.head(A2(List.drop,i,xs));
+                                      });
+                   var succ = F2(function (x,y)
+                                 {
+                                   return x + y;
+                                 })(1);
+                   var isSubgoal = F2(function (lv,adv)
+                                      {
+                                        return _U.cmp(succ(adv),List.length(lv.seq)) < 0;
+                                      });
+                   var goal = F2(function (lv,adv)
+                                 {
+                                   return A2(isSubgoal,
+                                             lv,
+                                             adv) ? Basics.fst(List.head(unsafeNth(succ(adv))(lv.seq))) : lv.goal;
+                                 });
+                   var Level = function (a)
+                               {
+                                 return function (b)
+                                        {
+                                          return function (c)
+                                                 {
+                                                   return function (d)
+                                                          {
+                                                            return function (e)
+                                                                   {
+                                                                     return function (f)
+                                                                            {
+                                                                              return function (g)
+                                                                                     {
+                                                                                       return function (h)
+                                                                                              {
+                                                                                                return function (i)
+                                                                                                       {
+                                                                                                         return function (j)
+                                                                                                                {
+                                                                                                                  return {_: {}, face0: j, goal: i, h: d, number: a, obsRight: f, obsUp: g, seq: h, side: b, start: e, w: c};
+                                                                                                                };
+                                                                                                       };
+                                                                                              };
+                                                                                     };
+                                                                            };
+                                                                   };
+                                                          };
+                                                 };
+                                        };
+                               };
+                   var levels = _J.toList([Level(0)(200)(3)(2)({ctor: "_Tuple2", _0: 0, _1: 0})(_J.toList([{ctor: "_Tuple2", _0: 0, _1: 0}]))(_J.toList([{ctor: "_Tuple2", _0: 1, _1: 0}]))(_J.toList([_J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 0}, _1: Arrow.Up},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 1}, _1: Arrow.Right}]),
+                                                                                                                                                                                                       _J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 1, _1: 1}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 2, _1: 1}, _1: Arrow.Down},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 2, _1: 0}, _1: Arrow.Left}])]))({ctor: "_Tuple2", _0: 1, _1: 0})(Arrow.Up),
+                                           Level(1)(180)(2)(4)({ctor: "_Tuple2", _0: 0, _1: 0})(_J.toList([{ctor: "_Tuple2", _0: 0, _1: 1},
+                                                                                                           {ctor: "_Tuple2", _0: 0, _1: 2}]))(_J.toList([{ctor: "_Tuple2", _0: 1, _1: 0}]))(_J.toList([_J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 0}, _1: Arrow.Up},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 1}, _1: Arrow.Up},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 2}, _1: Arrow.Up}]),
+                                                                                                                                                                                                       _J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 3}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 1, _1: 3}, _1: Arrow.Down},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 1, _1: 2}, _1: Arrow.Down}])]))({ctor: "_Tuple2", _0: 1, _1: 1})(Arrow.Up),
+                                           Level(2)(200)(3)(3)({ctor: "_Tuple2", _0: 2, _1: 0})(_J.toList([{ctor: "_Tuple2", _0: 0, _1: 1}]))(_J.toList([{ctor: "_Tuple2", _0: 1, _1: 0},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 2, _1: 0},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 1, _1: 1}]))(_J.toList([_J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 2, _1: 0}, _1: Arrow.Left},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 1, _1: 0}, _1: Arrow.Left},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 0}, _1: Arrow.Up},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 1}, _1: Arrow.Up},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 2}, _1: Arrow.Right}]),
+                                                                                                                                                                                                       _J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 1, _1: 2}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 2, _1: 2}, _1: Arrow.Down},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 2, _1: 1}, _1: Arrow.Left}])]))({ctor: "_Tuple2", _0: 1, _1: 1})(Arrow.Left),
+                                           Level(3)(200)(5)(3)({ctor: "_Tuple2", _0: 0, _1: 1})(_J.toList([{ctor: "_Tuple2", _0: 0, _1: 1}]))(_J.toList([{ctor: "_Tuple2", _0: 1, _1: 0},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 2, _1: 0},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 3, _1: 0},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 4, _1: 0},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 1, _1: 1},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 2, _1: 1},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 3, _1: 1}]))(_J.toList([_J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 1}, _1: Arrow.Up},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 2}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 1, _1: 2}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 2, _1: 2}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 3, _1: 2}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 4, _1: 2}, _1: Arrow.Down}]),
+                                                                                                                                                                                                       _J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 4, _1: 1}, _1: Arrow.Left},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 3, _1: 1}, _1: Arrow.Left},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 2, _1: 1}, _1: Arrow.Left}])]))({ctor: "_Tuple2", _0: 1, _1: 1})(Arrow.Left),
+                                           Level(4)(160)(5)(4)({ctor: "_Tuple2", _0: 0, _1: 3})(_J.toList([{ctor: "_Tuple2", _0: 3, _1: 1}]))(_J.toList([{ctor: "_Tuple2", _0: 0, _1: 0},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 1, _1: 0},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 2, _1: 0},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 1, _1: 1},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 2, _1: 1},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 3, _1: 1},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 4, _1: 1},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 0, _1: 2},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 1, _1: 2},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 2, _1: 2},
+                                                                                                                                                         {ctor: "_Tuple2", _0: 4, _1: 2}]))(_J.toList([_J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 3}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 1, _1: 3}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 2, _1: 3}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 3, _1: 3}, _1: Arrow.Down}]),
+                                                                                                                                                                                                       _J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 3, _1: 2}, _1: Arrow.Left},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 2, _1: 2}, _1: Arrow.Left},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 1, _1: 2}, _1: Arrow.Left},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 2}, _1: Arrow.Down},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 0, _1: 1}, _1: Arrow.Right}]),
+                                                                                                                                                                                                       _J.toList([{ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 1, _1: 1}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 2, _1: 1}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 3, _1: 1}, _1: Arrow.Down},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 3, _1: 0}, _1: Arrow.Right},
+                                                                                                                                                                                                                  {ctor: "_Tuple2", _0: {ctor: "_Tuple2", _0: 4, _1: 0}, _1: Arrow.Up}])]))({ctor: "_Tuple2", _0: 4, _1: 1})(Arrow.Right)]);
+                   var level0 = List.head(levels);
+                   _elm.Level.values = {_op: _op, isSubgoal: isSubgoal, goal: goal, levels: levels, level0: level0, succ: succ, unsafeNth: unsafeNth, nth: nth, Level: Level};
+                   return _elm.Level.values;
+                 };Elm.Arrow = Elm.Arrow || {};
+Elm.Arrow.make = function (_elm)
+                 {
+                   "use strict";
+                   _elm.Arrow = _elm.Arrow || {};
+                   if (_elm.Arrow.values)
+                   return _elm.Arrow.values;
+                   var _N = Elm.Native,
+                       _U = _N.Utils.make(_elm),
+                       _L = _N.List.make(_elm),
+                       _E = _N.Error.make(_elm),
+                       _J = _N.JavaScript.make(_elm),
+                       $moduleName = "Arrow";
+                   var Basics = Elm.Basics.make(_elm);
+                   var Color = Elm.Color.make(_elm);
+                   var Graphics = Graphics || {};
+                   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+                   var Graphics = Graphics || {};
+                   Graphics.Element = Elm.Graphics.Element.make(_elm);
+                   var List = Elm.List.make(_elm);
+                   var Maybe = Elm.Maybe.make(_elm);
+                   var Native = Native || {};
+                   Native.Ports = Elm.Native.Ports.make(_elm);
+                   var Prelude = Elm.Prelude.make(_elm);
+                   var Signal = Elm.Signal.make(_elm);
+                   var String = Elm.String.make(_elm);
+                   var Text = Elm.Text.make(_elm);
+                   var Time = Elm.Time.make(_elm);
+                   var _op = {};
+                   var arrow = Graphics.Collage.polygon(_J.toList([{ctor: "_Tuple2", _0: 2.357, _1: 180.198},
+                                                                   {ctor: "_Tuple2", _0: 182.555, _1: 0},
+                                                                   {ctor: "_Tuple2", _0: 2.357, _1: -180.196},
+                                                                   {ctor: "_Tuple2", _0: -116.492, _1: -180.196},
+                                                                   {ctor: "_Tuple2", _0: 20.568, _1: -43.131},
+                                                                   {ctor: "_Tuple2", _0: -248.765, _1: -43.131},
+                                                                   {ctor: "_Tuple2", _0: -248.765, _1: 44.091},
+                                                                   {ctor: "_Tuple2", _0: 19.61, _1: 44.091},
+                                                                   {ctor: "_Tuple2", _0: -116.707, _1: 180.411},
+                                                                   {ctor: "_Tuple2", _0: 2.357, _1: 180.198}]));
+                   var Right = {ctor: "Right"};
+                   var Left = {ctor: "Left"};
+                   var Down = {ctor: "Down"};
+                   var Up = {ctor: "Up"};
+                   var arrowForm = function (m)
+                                   {
+                                     return Graphics.Collage.scale(0.15)(function ()
+                                                                         {
+                                                                           switch (m.ctor)
+                                                                           {case
+                                                                            "Down" :
+                                                                              return Graphics.Collage.rotate(Basics.turns(0.75))(Graphics.Collage.filled(Color.red)(arrow));
+                                                                            case
+                                                                            "Left" :
+                                                                              return Graphics.Collage.rotate(Basics.turns(0.5))(Graphics.Collage.filled(Color.purple)(arrow));
+                                                                            case
+                                                                            "Right" :
+                                                                              return Graphics.Collage.filled(Color.green)(arrow);
+                                                                            case
+                                                                            "Up" :
+                                                                              return Graphics.Collage.rotate(Basics.turns(0.25))(Graphics.Collage.filled(Color.blue)(arrow));}
+                                                                           _E.Case($moduleName,
+                                                                                   "between lines 18 and 22");
+                                                                         }());
+                                   };
+                   _elm.Arrow.values = {_op: _op, arrow: arrow, arrowForm: arrowForm, Up: Up, Down: Down, Left: Left, Right: Right};
+                   return _elm.Arrow.values;
+                 };Elm.Pull = Elm.Pull || {};
+Elm.Pull.make = function (_elm)
+                {
+                  "use strict";
+                  _elm.Pull = _elm.Pull || {};
+                  if (_elm.Pull.values)
+                  return _elm.Pull.values;
+                  var _N = Elm.Native,
+                      _U = _N.Utils.make(_elm),
+                      _L = _N.List.make(_elm),
+                      _E = _N.Error.make(_elm),
+                      _J = _N.JavaScript.make(_elm),
+                      $moduleName = "Pull";
+                  var Basics = Elm.Basics.make(_elm);
+                  var Color = Elm.Color.make(_elm);
+                  var Graphics = Graphics || {};
+                  Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+                  var Graphics = Graphics || {};
+                  Graphics.Element = Elm.Graphics.Element.make(_elm);
+                  var Http = Elm.Http.make(_elm);
+                  var List = Elm.List.make(_elm);
+                  var Maybe = Elm.Maybe.make(_elm);
+                  var Native = Native || {};
+                  Native.Ports = Elm.Native.Ports.make(_elm);
+                  var Prelude = Elm.Prelude.make(_elm);
+                  var Signal = Elm.Signal.make(_elm);
+                  var String = Elm.String.make(_elm);
+                  var Text = Elm.Text.make(_elm);
+                  var Time = Elm.Time.make(_elm);
+                  var _op = {};
+                  var pull = function ()
+                             {
+                               var extract = function (resp)
+                                             {
+                                               return function ()
+                                                      {
+                                                        switch (resp.ctor)
+                                                        {case
+                                                         "Success" :
+                                                           return Maybe.Just(List.head(String.lines(resp._0)));}
+                                                        return Maybe.Nothing;
+                                                      }();
+                                             };
+                               var pulled = Http.sendGet(A2(Signal._op["<~"],
+                                                            Basics.always("pull.txt"),
+                                                            Time.fps(0.5)));
+                               return A2(Signal._op["<~"],extract,Signal.dropRepeats(pulled));
+                             }();
+                  var main = A2(Signal._op["<~"],Text.asText,pull);
+                  _elm.Pull.values = {_op: _op, pull: pull, main: main};
+                  return _elm.Pull.values;
+                };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script><noscript></noscript></body></html>
