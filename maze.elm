@@ -172,8 +172,11 @@ main = layers <~ combine
            [ scene <~ Window.dimensions ~ clock ~ state
            , stats ]
 
---port sound : Signal String
---port sound = (show . .ot) <~ state
+port sound : Signal String
+port sound = (\s -> case s of
+    Game p -> show . .ot <| p
+    _ -> "None"
+    ) <~ state
 
 -- Below: should be library functions
 
