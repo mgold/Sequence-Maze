@@ -28,7 +28,6 @@ Elm.Main.make = function (_elm)
                   var Native = Native || {};
                   Native.Ports = Elm.Native.Ports.make(_elm);
                   var Prelude = Elm.Prelude.make(_elm);
-                  var Pull = Elm.Pull.make(_elm);
                   var Signal = Elm.Signal.make(_elm);
                   var String = Elm.String.make(_elm);
                   var Text = Elm.Text.make(_elm);
@@ -754,55 +753,4 @@ Elm.Arrow.make = function (_elm)
                                    };
                    _elm.Arrow.values = {_op: _op, arrow: arrow, arrowForm: arrowForm, Up: Up, Down: Down, Left: Left, Right: Right};
                    return _elm.Arrow.values;
-                 };Elm.Pull = Elm.Pull || {};
-Elm.Pull.make = function (_elm)
-                {
-                  "use strict";
-                  _elm.Pull = _elm.Pull || {};
-                  if (_elm.Pull.values)
-                  return _elm.Pull.values;
-                  var _N = Elm.Native,
-                      _U = _N.Utils.make(_elm),
-                      _L = _N.List.make(_elm),
-                      _E = _N.Error.make(_elm),
-                      _J = _N.JavaScript.make(_elm),
-                      $moduleName = "Pull";
-                  var Basics = Elm.Basics.make(_elm);
-                  var Color = Elm.Color.make(_elm);
-                  var Graphics = Graphics || {};
-                  Graphics.Collage = Elm.Graphics.Collage.make(_elm);
-                  var Graphics = Graphics || {};
-                  Graphics.Element = Elm.Graphics.Element.make(_elm);
-                  var Http = Elm.Http.make(_elm);
-                  var List = Elm.List.make(_elm);
-                  var Maybe = Elm.Maybe.make(_elm);
-                  var Native = Native || {};
-                  Native.Ports = Elm.Native.Ports.make(_elm);
-                  var Prelude = Elm.Prelude.make(_elm);
-                  var Signal = Elm.Signal.make(_elm);
-                  var String = Elm.String.make(_elm);
-                  var Text = Elm.Text.make(_elm);
-                  var Time = Elm.Time.make(_elm);
-                  var _op = {};
-                  var pull = function ()
-                             {
-                               var extract = function (resp)
-                                             {
-                                               return function ()
-                                                      {
-                                                        switch (resp.ctor)
-                                                        {case
-                                                         "Success" :
-                                                           return Maybe.Just(List.head(String.lines(resp._0)));}
-                                                        return Maybe.Nothing;
-                                                      }();
-                                             };
-                               var pulled = Http.sendGet(A2(Signal._op["<~"],
-                                                            Basics.always("pull.txt"),
-                                                            Time.fps(0.5)));
-                               return A2(Signal._op["<~"],extract,Signal.dropRepeats(pulled));
-                             }();
-                  var main = A2(Signal._op["<~"],Text.asText,pull);
-                  _elm.Pull.values = {_op: _op, pull: pull, main: main};
-                  return _elm.Pull.values;
-                };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script><noscript></noscript></body></html>
+                 };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script><noscript></noscript></body></html>
