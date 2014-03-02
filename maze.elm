@@ -3,9 +3,9 @@ import Http (sendGet, Success, Response)
 import Keyboard (arrows)
 import JavaScript as JS
 
-import open Arrow
-import open Level
-import open Pull
+import  Arrow (..)
+import Level (..)
+import Pull (..)
 
 type Frac = Float -- semantically between 0 and 1
 
@@ -36,24 +36,33 @@ type Player = {i : Int, j : Int, prev : Move }
 player0 : Level -> Player
 player0 lvl = Player (fst lvl.start) (snd lvl.start) lvl.face0
 
-update = moves |> keepIf isJust (Just Right) |> lift (\(Just m) -> m)
+clock : Signal Time
+clock = foldp (+) 0 <| fps 20
+
+update : Signal Move
+update = keepJusts Right moves
 
 data Output = Mv Move | Subgoal | Goal | Error | None
-type State = {lv : Level,
-              adv : Int,
-              p : Player,
-              ot : Output
-             }
+type Play = {lv : Level,
+             adv : Int,
+             p : Player,
+             ot : Output
+            }
+data State = Welcome | Game Play | YouWin Int
+movesToResetWin = 3
 
 state0 : State
-state0 = State level0 0 (player0 level0) None
+state0 = Welcome
 
 stepFun : Move -> State -> State
-stepFun m s = if okMove m s then doMove m s else {s|ot <- Error}
+stepFun m s = case s of
+    Game p -> if okMove m p then doMove m p else Game {p|ot <- Error}
+    Welcome -> Game <| Play level0 0 (player0 level0) None
+    YouWin c -> if c + 1 == movesToResetWin then Welcome else YouWin (c+1)
 
 state = foldp stepFun state0 update
 
-okMove : Move -> State -> Bool
+okMove : Move -> Play -> Bool
 okMove m {lv, p} = case m of
     Right -> lv.w > p.i +1
                 && not (member (p.i, p.j) lv.obsRight)
@@ -64,20 +73,19 @@ okMove m {lv, p} = case m of
     Down -> p.j > 0
                 && not (member (p.i, p.j-1) lv.obsUp)
 
-doMove : Move -> State -> State
+doMove : Move -> Play -> State
 doMove m {lv, adv, p} = let p' = case m of
         Right -> {p|i <- p.i + 1, prev <- m}
         Left  -> {p|i <- p.i - 1, prev <- m}
         Up    -> {p|j <- p.j + 1, prev <- m}
         Down  -> {p|j <- p.j - 1, prev <- m}
     in if |(p'.i, p'.j) /= goal lv adv -> -- no level change
-               State lv adv p' (Mv m)
+               Game <| Play lv adv p' (Mv m)
           |succ adv /= length lv.seq ->   -- subgoal
-               State lv (succ adv) (player0 lv) Subgoal
+               Game <| Play lv (succ adv) (player0 lv) Subgoal
           |otherwise ->                   -- goal
-               let lv' = maybe (unsafeNth 0 levels) id <| nth (succ lv.number) levels
-               in State lv' 0 (player0 lv') Goal
-
+               maybe (YouWin 0) (\lv' -> Game <| Play lv' 0 (player0 lv') Goal)
+                    <| nth (succ lv.number) levels
 
 -- DRAW ----
 grid : Level -> (Int, Int) -> Form -> Form
@@ -130,16 +138,20 @@ drawObstacles lv = let
                    ++ map (\c -> grid lv c obstacleFormH) lv.obsUp
 
 scene : (Int,Int) -> Time -> State -> Element
-scene (w,h) t {lv,adv,p} = let
-    side = toFloat lv.side
-    center = move (-side * toFloat (lv.w-1) * 0.5, -side * toFloat (lv.h-1) * 0.5)
-        in collage w h <|
-        [ rect (toFloat w) (toFloat h) |> filled lightCharcoal ] 
-          ++ map center (drawSquares lv ++ drawObstacles lv ++ drawArrows lv adv) ++
-        [ drawGoal lv adv t |> center
-        , drawPlayer lv p t |> center
-        ]
+scene (w,h) t s = case s of
+    Welcome -> asText "Welcome!"
+    YouWin _ -> asText "You Win!"
+    Game {lv,adv,p} -> let
+        side = toFloat lv.side
+        center = move (-side * toFloat (lv.w-1) * 0.5, -side * toFloat (lv.h-1) * 0.5)
+            in collage w h <|
+            [ rect (toFloat w) (toFloat h) |> filled lightCharcoal ] 
+              ++ map center (drawSquares lv ++ drawObstacles lv ++ drawArrows lv adv) ++
+            [ drawGoal lv adv t |> center
+            , drawPlayer lv p t |> center
+            ]
 
+{-
 stats : Signal Element
 stats = flow <~ constant down ~ combine
     [ (\lv -> (text . monospace . toText) (show lv.number++": "++show lv.w++"x"++show lv.h++" @"++show lv.side))
@@ -153,15 +165,15 @@ stats = flow <~ constant down ~ combine
     , lift asText <| (\{lv, adv} -> goal lv adv) <~ state
     , lift asText pull
     ]
+-}
+stats = constant empty
 
-clock : Signal Time
-clock = foldp (+) 0 <| fps 20
 main = layers <~ combine
            [ scene <~ Window.dimensions ~ clock ~ state
            , stats ]
 
-port sound : Signal String
-port sound = (show . .ot) <~ state
+--port sound : Signal String
+--port sound = (show . .ot) <~ state
 
 -- Below: should be library functions
 
@@ -182,3 +194,6 @@ member : a -> [a] -> Bool
 member findMe list = case list of
     [] -> False
     (x::xs) -> if x == findMe then True else member findMe xs
+
+keepJusts : a -> Signal (Maybe a) -> Signal a
+keepJusts a sa = lift (maybe a id) (keepIf isJust Nothing sa)
