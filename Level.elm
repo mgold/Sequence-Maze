@@ -13,7 +13,7 @@ type Level = {number: Int,
               obsRight: [Coord],
               obsUp: [Coord],
               seq: [Sequence],
-              goal : Coord,
+              goal : Coord
               }
 
 isSubgoal : Level -> Int -> Bool
