@@ -3,9 +3,9 @@ import Http (sendGet, Success, Response)
 import Keyboard (arrows)
 import JavaScript as JS
 
-import  Arrow (..)
+import Arrow (..)
 import Level (..)
-import Pull (..)
+--import Pull (..)
 
 type Frac = Float -- semantically between 0 and 1
 
@@ -20,16 +20,17 @@ moves_keyboard = let
             _ -> Nothing
         in lift toMove arrows |> keepIf isJust Nothing
 
-moves_pull = let
-    toMove s = case s of
-            Just "Left" -> Just Left
-            Just "Right" -> Just Right
-            Just "Up" -> Just Up
-            Just "Down" -> Just Down
-            _ -> Nothing
-        in lift toMove pull |> keepIf isJust Nothing
+port moves_port : Signal String
 
-moves = moves_keyboard
+string_to_move : String -> Maybe Move
+string_to_move s = case s of
+    "Left" -> Just Left
+    "Right" -> Just Right
+    "Up" -> Just Up
+    "Down" -> Just Down
+    _ -> Nothing
+
+moves = merge moves_keyboard (string_to_move <~ moves_port |> keepIf isJust Nothing)
 
 type Player = {i : Int, j : Int, prev : Move }
 

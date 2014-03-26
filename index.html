@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <title>Maze Game</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="http://elm-lang.org/elm-runtime.js"></script><!-- Or host locally-->
+    <script type="text/javascript" src="build/maze.js"></script>
+  </head>
+
+  <body>
+  </body>
+
+  <script type="text/javascript">
+      var my_elm = Elm.fullscreen(Elm.Main, {moves_port: ''});
+
+      var socket = io.connect('http://localhost');
+      //Node -> Elm
+      socket.on('move', function (data) {
+        my_elm.ports.moves_port.send(data);
+      });
+      //Elm -> Node
+      my_elm.ports.sound.subscribe(function (data){
+          socket.emit("sound", data);
+      });
+  </script>
+
+</html>
